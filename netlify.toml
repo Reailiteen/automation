@@ -1,0 +1,8 @@
+# Netlify build config. Build command and publish directory can be set in UI instead.
+
+[build.environment]
+  # Omit these keys from secrets scanning. NEXT_PUBLIC_SUPABASE_* are inlined into
+  # the client bundle by Next.js; Supabase anon key + URL are public by design (RLS).
+  # If your plan only supports SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES, add the
+  # actual Supabase URL and anon key as comma-separated values in Netlify UI instead.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY"

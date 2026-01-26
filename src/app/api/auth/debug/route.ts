@@ -9,8 +9,8 @@ export async function GET() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const keySet = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Log server-side only—never expose in response
-  console.log("[auth/debug] NEXT_PUBLIC_SUPABASE_URL:", url ?? "(undefined)");
+  // Log only presence, never values (avoids secrets scanner / log exposure)
+  console.log("[auth/debug] NEXT_PUBLIC_SUPABASE_URL:", url?.trim() ? "set" : "missing");
 
   const raw = (url ?? "").trim();
   const hasHttps = raw.startsWith("https://");
