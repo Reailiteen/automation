@@ -47,8 +47,8 @@ export default function SignUpPage() {
 
       setSuccess(true);
       if (data.session) {
-        router.push("/");
-        router.refresh();
+        // Force full page reload to ensure cookies are read and auth state updates
+        window.location.href = "/";
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong.";
