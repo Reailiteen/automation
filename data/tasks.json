@@ -327,5 +327,142 @@
     "id": "3gny4s7subw5l64g3kosab",
     "createdAt": "2026-01-26T01:55:20.052Z",
     "updatedAt": "2026-01-26T01:55:20.052Z"
+  },
+  {
+    "title": "Reminder: Think About Teeth",
+    "description": "Set a reminder to think about teeth in 30 minutes.",
+    "status": "pending",
+    "priority": "medium",
+    "estimatedTime": 1,
+    "focusLevel": "shallow",
+    "energyRequirement": "low",
+    "context": "anywhere",
+    "subtasks": [],
+    "dependencies": [],
+    "tags": [
+      "reminder",
+      "health"
+    ],
+    "parentTaskId": "usac6g5fvrlpbk3211ij1",
+    "kind": "reminder",
+    "recurrencePerWeek": 1,
+    "id": "4z6udymidki9hhoxlsjj97",
+    "createdAt": "2026-01-26T17:42:17.837Z",
+    "updatedAt": "2026-01-26T17:42:17.837Z"
+  },
+  {
+    "title": "Cancel Snoonu Trial",
+    "description": "Receive a reminder in 12 days to log in and cancel the Snoonu trial subscription to avoid charges.",
+    "status": "pending",
+    "priority": "medium",
+    "estimatedTime": 2,
+    "focusLevel": "shallow",
+    "energyRequirement": "low",
+    "context": "anywhere",
+    "subtasks": [],
+    "dependencies": [],
+    "tags": [
+      "Subscription",
+      "Reminder",
+      "Snoonu"
+    ],
+    "parentTaskId": "wp8lm86fksi1cpciukkom3k",
+    "kind": "reminder",
+    "recurrencePerWeek": 1,
+    "id": "z2l169xmy7623rkxnrwtn",
+    "createdAt": "2026-01-26T17:43:12.786Z",
+    "updatedAt": "2026-01-26T17:43:12.786Z"
+  },
+  {
+    "title": "Plan App Wrapper/Native Transition",
+    "description": "Research and plan the architectural transition of the app to a wrapper or native application structure.",
+    "status": "pending",
+    "priority": "medium",
+    "estimatedTime": 180,
+    "focusLevel": "deep",
+    "energyRequirement": "high",
+    "context": "work",
+    "subtasks": [],
+    "dependencies": [],
+    "tags": [
+      "AppDev",
+      "Architecture",
+      "Planning"
+    ],
+    "parentTaskId": "6zkxx6oor7826vbsjye8wm",
+    "kind": "todo",
+    "recurrencePerWeek": 1,
+    "id": "n61oo57wii9fix0jeoqc2",
+    "createdAt": "2026-01-26T17:51:00.207Z",
+    "updatedAt": "2026-01-26T17:51:00.207Z"
+  },
+  {
+    "title": "Cancel Google Subscription",
+    "description": "Cancel the Google subscription on or before February 24th to avoid future charges.",
+    "status": "pending",
+    "priority": "medium",
+    "estimatedTime": 15,
+    "focusLevel": "shallow",
+    "energyRequirement": "low",
+    "context": "anywhere",
+    "subtasks": [],
+    "dependencies": [],
+    "tags": [
+      "Admin",
+      "Subscription",
+      "Finance"
+    ],
+    "parentTaskId": "6zkxx6oor7826vbsjye8wm",
+    "kind": "reminder",
+    "recurrencePerWeek": 1,
+    "id": "fet3pk2ik9or9wqmww3qa",
+    "createdAt": "2026-01-26T17:51:00.210Z",
+    "updatedAt": "2026-01-26T17:51:00.210Z"
+  },
+  {
+    "title": "Implement Task Time Management",
+    "description": "Develop and integrate due dates for to-dos, and specific scheduling/repetition times for habits/reminders within the app.",
+    "status": "pending",
+    "priority": "medium",
+    "estimatedTime": 480,
+    "focusLevel": "deep",
+    "energyRequirement": "high",
+    "context": "work",
+    "subtasks": [],
+    "dependencies": [],
+    "tags": [
+      "AppDev",
+      "Features",
+      "TaskMgmt"
+    ],
+    "parentTaskId": "6zkxx6oor7826vbsjye8wm",
+    "kind": "todo",
+    "recurrencePerWeek": 1,
+    "id": "8kxmah4i14613qf9yetiy3",
+    "createdAt": "2026-01-26T17:51:00.212Z",
+    "updatedAt": "2026-01-26T17:51:00.212Z"
+  },
+  {
+    "title": "Develop Internal Project Support",
+    "description": "Design and implement core project management features within the app, such as project grouping, milestones, and progress tracking.",
+    "status": "pending",
+    "priority": "medium",
+    "estimatedTime": 360,
+    "focusLevel": "deep",
+    "energyRequirement": "high",
+    "context": "work",
+    "subtasks": [],
+    "dependencies": [],
+    "tags": [
+      "AppDev",
+      "ProjectMgmt",
+      "Features"
+    ],
+    "parentTaskId": "6zkxx6oor7826vbsjye8wm",
+    "kind": "todo",
+    "recurrencePerWeek": 1,
+    "id": "wbs9wuqpd1lnbf7nwlax9p",
+    "createdAt": "2026-01-26T17:51:00.214Z",
+    "updatedAt": "2026-01-26T17:51:00.214Z"
   }
 ]

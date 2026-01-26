@@ -444,5 +444,319 @@
     },
     "confidence": 0.8,
     "timestamp": "2026-01-26T01:55:20.056Z"
+  },
+  {
+    "agentType": "planner",
+    "input": {
+      "user": {
+        "name": "Default User",
+        "email": "user@example.com",
+        "preferences": {
+          "workingHours": [],
+          "energyProfile": {
+            "peakHours": [],
+            "mediumHours": [],
+            "lowHours": [],
+            "recoveryTime": 15
+          },
+          "taskBreakingPreference": "automatic",
+          "schedulingStyle": "flexible",
+          "notificationSettings": {
+            "taskReminders": true,
+            "scheduleChanges": true,
+            "dailySummary": true
+          }
+        },
+        "id": "default-user",
+        "createdAt": "2026-01-12T09:51:36.468Z",
+        "updatedAt": "2026-01-12T09:51:36.468Z"
+      },
+      "goals": [
+        "hey , remind me in 30 mins about teeth"
+      ],
+      "constraints": {},
+      "forceCreate": false
+    },
+    "output": {
+      "plan": {
+        "title": "Teeth Reminder",
+        "description": "Set a reminder to think about teeth in 30 minutes.",
+        "status": "draft",
+        "tasks": [],
+        "goal": "hey , remind me in 30 mins about teeth",
+        "constraints": {},
+        "id": "usac6g5fvrlpbk3211ij1",
+        "createdAt": "2026-01-26T17:42:17.830Z",
+        "updatedAt": "2026-01-26T17:42:17.830Z"
+      },
+      "tasks": [
+        {
+          "title": "Reminder: Think About Teeth",
+          "description": "Set a reminder to think about teeth in 30 minutes.",
+          "status": "pending",
+          "priority": "medium",
+          "estimatedTime": 1,
+          "focusLevel": "shallow",
+          "energyRequirement": "low",
+          "context": "anywhere",
+          "subtasks": [],
+          "dependencies": [],
+          "tags": [
+            "reminder",
+            "health"
+          ],
+          "parentTaskId": "usac6g5fvrlpbk3211ij1",
+          "kind": "reminder",
+          "recurrencePerWeek": 1,
+          "id": "4z6udymidki9hhoxlsjj97",
+          "createdAt": "2026-01-26T17:42:17.837Z",
+          "updatedAt": "2026-01-26T17:42:17.837Z"
+        }
+      ],
+      "reasoning": [
+        "Loaded context: 2 plans, 15 tasks",
+        "Found 1 similar items (highest similarity: 75%)",
+        "Found 1 related plans, 2 related tasks",
+        "Generated plan title: \"Teeth Reminder\"",
+        "Generated plan description: \"Set a reminder to think about teeth in 30 minutes.\"",
+        "Analyzed 1 goals and created 1 tasks using AI",
+        "Estimated total effort: 1 minutes"
+      ]
+    },
+    "confidence": 0.8,
+    "timestamp": "2026-01-26T17:42:17.842Z"
+  },
+  {
+    "agentType": "planner",
+    "input": {
+      "user": {
+        "name": "Default User",
+        "email": "user@example.com",
+        "preferences": {
+          "workingHours": [],
+          "energyProfile": {
+            "peakHours": [],
+            "mediumHours": [],
+            "lowHours": [],
+            "recoveryTime": 15
+          },
+          "taskBreakingPreference": "automatic",
+          "schedulingStyle": "flexible",
+          "notificationSettings": {
+            "taskReminders": true,
+            "scheduleChanges": true,
+            "dailySummary": true
+          }
+        },
+        "id": "default-user",
+        "createdAt": "2026-01-12T09:51:36.468Z",
+        "updatedAt": "2026-01-12T09:51:36.468Z"
+      },
+      "goals": [
+        "remind me in 12 days to cancel my snoonu trial"
+      ],
+      "constraints": {},
+      "forceCreate": false
+    },
+    "output": {
+      "plan": {
+        "title": "Snoonu Trial Cancellation Reminder",
+        "description": "Set a reminder for 12 days from now to cancel the Snoonu trial subscription before the free period ends.",
+        "status": "draft",
+        "tasks": [],
+        "goal": "remind me in 12 days to cancel my snoonu trial",
+        "constraints": {},
+        "id": "wp8lm86fksi1cpciukkom3k",
+        "createdAt": "2026-01-26T17:43:12.780Z",
+        "updatedAt": "2026-01-26T17:43:12.780Z"
+      },
+      "tasks": [
+        {
+          "title": "Cancel Snoonu Trial",
+          "description": "Receive a reminder in 12 days to log in and cancel the Snoonu trial subscription to avoid charges.",
+          "status": "pending",
+          "priority": "medium",
+          "estimatedTime": 2,
+          "focusLevel": "shallow",
+          "energyRequirement": "low",
+          "context": "anywhere",
+          "subtasks": [],
+          "dependencies": [],
+          "tags": [
+            "Subscription",
+            "Reminder",
+            "Snoonu"
+          ],
+          "parentTaskId": "wp8lm86fksi1cpciukkom3k",
+          "kind": "reminder",
+          "recurrencePerWeek": 1,
+          "id": "z2l169xmy7623rkxnrwtn",
+          "createdAt": "2026-01-26T17:43:12.786Z",
+          "updatedAt": "2026-01-26T17:43:12.786Z"
+        }
+      ],
+      "reasoning": [
+        "Loaded context: 3 plans, 16 tasks",
+        "Found 1 similar items (highest similarity: 70%)",
+        "Found 2 related plans, 2 related tasks",
+        "Generated plan title: \"Snoonu Trial Cancellation Reminder\"",
+        "Generated plan description: \"Set a reminder for 12 days from now to cancel the Snoonu trial subscription before the free period ends.\"",
+        "Analyzed 1 goals and created 1 tasks using AI",
+        "Estimated total effort: 2 minutes"
+      ]
+    },
+    "confidence": 0.8,
+    "timestamp": "2026-01-26T17:43:12.793Z"
+  },
+  {
+    "agentType": "planner",
+    "input": {
+      "user": {
+        "name": "Default User",
+        "email": "user@example.com",
+        "preferences": {
+          "workingHours": [],
+          "energyProfile": {
+            "peakHours": [],
+            "mediumHours": [],
+            "lowHours": [],
+            "recoveryTime": 15
+          },
+          "taskBreakingPreference": "automatic",
+          "schedulingStyle": "flexible",
+          "notificationSettings": {
+            "taskReminders": true,
+            "scheduleChanges": true,
+            "dailySummary": true
+          }
+        },
+        "id": "default-user",
+        "createdAt": "2026-01-12T09:51:36.468Z",
+        "updatedAt": "2026-01-12T09:51:36.468Z"
+      },
+      "goals": [
+        "Okay, so I would also like to make the app a wrapper or an app later, so that's a task. Another task would be for me to cancel my subscription for Google on the 24th of February. I would also like to add the ability for the time aspect of the tasks so if they are to-dos we have due dates if they are habits or reminders they have specific times when they're added when been repeated and more also a last task could be project support"
+      ],
+      "constraints": {},
+      "forceCreate": false
+    },
+    "output": {
+      "plan": {
+        "title": "New App Features & Personal Admin",
+        "description": "Integrate advanced time management and project support into the app, plan for its architectural transition, and manage a personal subscription cancellation.",
+        "status": "draft",
+        "tasks": [],
+        "goal": "Okay, so I would also like to make the app a wrapper or an app later, so that's a task. Another task would be for me to cancel my subscription for Google on the 24th of February. I would also like to add the ability for the time aspect of the tasks so if they are to-dos we have due dates if they are habits or reminders they have specific times when they're added when been repeated and more also a last task could be project support",
+        "constraints": {},
+        "id": "6zkxx6oor7826vbsjye8wm",
+        "createdAt": "2026-01-26T17:51:00.200Z",
+        "updatedAt": "2026-01-26T17:51:00.200Z"
+      },
+      "tasks": [
+        {
+          "title": "Plan App Wrapper/Native Transition",
+          "description": "Research and plan the architectural transition of the app to a wrapper or native application structure.",
+          "status": "pending",
+          "priority": "medium",
+          "estimatedTime": 180,
+          "focusLevel": "deep",
+          "energyRequirement": "high",
+          "context": "work",
+          "subtasks": [],
+          "dependencies": [],
+          "tags": [
+            "AppDev",
+            "Architecture",
+            "Planning"
+          ],
+          "parentTaskId": "6zkxx6oor7826vbsjye8wm",
+          "kind": "todo",
+          "recurrencePerWeek": 1,
+          "id": "n61oo57wii9fix0jeoqc2",
+          "createdAt": "2026-01-26T17:51:00.207Z",
+          "updatedAt": "2026-01-26T17:51:00.207Z"
+        },
+        {
+          "title": "Cancel Google Subscription",
+          "description": "Cancel the Google subscription on or before February 24th to avoid future charges.",
+          "status": "pending",
+          "priority": "medium",
+          "estimatedTime": 15,
+          "focusLevel": "shallow",
+          "energyRequirement": "low",
+          "context": "anywhere",
+          "subtasks": [],
+          "dependencies": [],
+          "tags": [
+            "Admin",
+            "Subscription",
+            "Finance"
+          ],
+          "parentTaskId": "6zkxx6oor7826vbsjye8wm",
+          "kind": "reminder",
+          "recurrencePerWeek": 1,
+          "id": "fet3pk2ik9or9wqmww3qa",
+          "createdAt": "2026-01-26T17:51:00.210Z",
+          "updatedAt": "2026-01-26T17:51:00.210Z"
+        },
+        {
+          "title": "Implement Task Time Management",
+          "description": "Develop and integrate due dates for to-dos, and specific scheduling/repetition times for habits/reminders within the app.",
+          "status": "pending",
+          "priority": "medium",
+          "estimatedTime": 480,
+          "focusLevel": "deep",
+          "energyRequirement": "high",
+          "context": "work",
+          "subtasks": [],
+          "dependencies": [],
+          "tags": [
+            "AppDev",
+            "Features",
+            "TaskMgmt"
+          ],
+          "parentTaskId": "6zkxx6oor7826vbsjye8wm",
+          "kind": "todo",
+          "recurrencePerWeek": 1,
+          "id": "8kxmah4i14613qf9yetiy3",
+          "createdAt": "2026-01-26T17:51:00.212Z",
+          "updatedAt": "2026-01-26T17:51:00.212Z"
+        },
+        {
+          "title": "Develop Internal Project Support",
+          "description": "Design and implement core project management features within the app, such as project grouping, milestones, and progress tracking.",
+          "status": "pending",
+          "priority": "medium",
+          "estimatedTime": 360,
+          "focusLevel": "deep",
+          "energyRequirement": "high",
+          "context": "work",
+          "subtasks": [],
+          "dependencies": [],
+          "tags": [
+            "AppDev",
+            "ProjectMgmt",
+            "Features"
+          ],
+          "parentTaskId": "6zkxx6oor7826vbsjye8wm",
+          "kind": "todo",
+          "recurrencePerWeek": 1,
+          "id": "wbs9wuqpd1lnbf7nwlax9p",
+          "createdAt": "2026-01-26T17:51:00.214Z",
+          "updatedAt": "2026-01-26T17:51:00.214Z"
+        }
+      ],
+      "reasoning": [
+        "Loaded context: 4 plans, 17 tasks",
+        "Found 5 similar items (highest similarity: 80%)",
+        "Found 2 related plans, 10 related tasks",
+        "Generated plan title: \"New App Features & Personal Admin\"",
+        "Generated plan description: \"Integrate advanced time management and project support into the app, plan for its architectural transition, and manage a personal subscription cancellation.\"",
+        "Analyzed 1 goals and created 4 tasks using AI",
+        "Estimated total effort: 1035 minutes"
+      ]
+    },
+    "confidence": 0.8,
+    "timestamp": "2026-01-26T17:51:00.219Z"
   }
 ]

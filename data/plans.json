@@ -37,5 +37,47 @@
     "id": "rmwb15w0mnqoi31dxcn4yg",
     "createdAt": "2026-01-26T01:55:20.013Z",
     "updatedAt": "2026-01-26T01:55:20.054Z"
+  },
+  {
+    "title": "Teeth Reminder",
+    "description": "Set a reminder to think about teeth in 30 minutes.",
+    "status": "draft",
+    "tasks": [
+      "4z6udymidki9hhoxlsjj97"
+    ],
+    "goal": "hey , remind me in 30 mins about teeth",
+    "constraints": {},
+    "id": "usac6g5fvrlpbk3211ij1",
+    "createdAt": "2026-01-26T17:42:17.830Z",
+    "updatedAt": "2026-01-26T17:42:17.840Z"
+  },
+  {
+    "title": "Snoonu Trial Cancellation Reminder",
+    "description": "Set a reminder for 12 days from now to cancel the Snoonu trial subscription before the free period ends.",
+    "status": "draft",
+    "tasks": [
+      "z2l169xmy7623rkxnrwtn"
+    ],
+    "goal": "remind me in 12 days to cancel my snoonu trial",
+    "constraints": {},
+    "id": "wp8lm86fksi1cpciukkom3k",
+    "createdAt": "2026-01-26T17:43:12.780Z",
+    "updatedAt": "2026-01-26T17:43:12.791Z"
+  },
+  {
+    "title": "New App Features & Personal Admin",
+    "description": "Integrate advanced time management and project support into the app, plan for its architectural transition, and manage a personal subscription cancellation.",
+    "status": "draft",
+    "tasks": [
+      "n61oo57wii9fix0jeoqc2",
+      "fet3pk2ik9or9wqmww3qa",
+      "8kxmah4i14613qf9yetiy3",
+      "wbs9wuqpd1lnbf7nwlax9p"
+    ],
+    "goal": "Okay, so I would also like to make the app a wrapper or an app later, so that's a task. Another task would be for me to cancel my subscription for Google on the 24th of February. I would also like to add the ability for the time aspect of the tasks so if they are to-dos we have due dates if they are habits or reminders they have specific times when they're added when been repeated and more also a last task could be project support",
+    "constraints": {},
+    "id": "6zkxx6oor7826vbsjye8wm",
+    "createdAt": "2026-01-26T17:51:00.200Z",
+    "updatedAt": "2026-01-26T17:51:00.217Z"
   }
 ]

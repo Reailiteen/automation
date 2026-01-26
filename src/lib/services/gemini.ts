@@ -9,6 +9,11 @@ export class GeminiService {
   constructor() {
     this.apiKey = process.env.GEMINI_API_KEY || '';
     
+    // Remove any surrounding quotes that might have been included
+    if (this.apiKey) {
+      this.apiKey = this.apiKey.trim().replace(/^["']|["']$/g, '');
+    }
+    
     if (!this.apiKey) {
       console.error('GEMINI_API_KEY is not set in environment variables');
     } else {
@@ -21,21 +26,26 @@ export class GeminiService {
     }
   }
 
-  async generateContent(prompt: string, modelName: string = 'gemini-pro'): Promise<string> {
+  async generateContent(prompt: string, modelName: string = 'gemini-2.0-flash'): Promise<string> {
     if (!this.genAI) {
       throw new Error('Google Generative AI not initialized. Check your API key.');
     }
 
-    // Try multiple model names in order of preference
+    // Try multiple model names in order of preference (updated to use currently available models)
+    // Start with newer models that are actually available in v1beta API
     const modelNames = [
-      'gemini-pro',  // Most basic, should always work
-      'gemini-1.5-flash',
-      'gemini-1.5-pro',
-      'gemini-2.0-flash',
-      'gemini-2.5-flash',
+      'gemini-2.5-flash',  // Latest available
+      'gemini-2.0-flash',  // Known to work (confirmed from your logs)
     ];
 
+    // Allow override via environment variable or parameter
+    const preferredModel = process.env.GEMINI_MODEL || modelName;
+    if (preferredModel && modelNames.includes(preferredModel)) {
+      modelNames.unshift(preferredModel);
+    }
+
     let lastError: Error | null = null;
+    let attemptedModels: string[] = [];
     
     for (const model of modelNames) {
       try {
@@ -44,18 +54,25 @@ export class GeminiService {
         const response = await result.response;
         const text = response.text();
         
-        console.log(`Successfully used model: ${model}`);
+        // Silently succeed - no logging needed for normal operation
         return text;
       } catch (error: any) {
-        console.warn(`Error with model ${model}:`, error.message);
+        // Silently skip 404 errors (model not available) - these are expected when trying fallbacks
+        // Only track non-404 errors as they might indicate real problems
+        if (!error.message?.includes('404') && !error.message?.includes('Not Found')) {
+          console.warn(`Error with model ${model}:`, error.message);
+        }
+        attemptedModels.push(model);
         lastError = error;
         // Continue to next model
         continue;
       }
     }
 
-    // If we get here, all models failed
-    throw lastError || new Error('Failed to generate content with any available Gemini model. Please check your API key and model availability.');
+    // If we get here, all models failed - log all attempted models
+    const errorMessage = `Failed to generate content with any available Gemini model. Attempted: ${attemptedModels.join(', ')}. Please check your API key and model availability.`;
+    console.error(errorMessage);
+    throw lastError || new Error(errorMessage);
   }
 
   generatePrompt(agentType: 'planner' | 'prioritization' | 'scheduler' | 'execution' | 'reflection', context: any): string {
