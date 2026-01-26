@@ -13,5 +13,29 @@
     "id": "ae3hrbc26u55mp2ow7ctmp",
     "createdAt": "2026-01-26T00:44:21.836Z",
     "updatedAt": "2026-01-26T00:44:21.863Z"
+  },
+  {
+    "title": "App Feature Development & Integration Roadmap",
+    "description": "Develop core app features including notification and third-party integrations, advanced task management (CRUD, archiving, filtering), memory support, conversation handling, lead management, and cron job automation.",
+    "status": "draft",
+    "tasks": [
+      "1mrpzcbvab5nph0r7frn",
+      "s8nrkcmjwnbk9l58vaf99",
+      "22q1aislq8je1zvml59g9o",
+      "psjr98r05ydurgotlkqpsh",
+      "h2x225h94uvsxb6ss6htvc",
+      "1zd8nzkcy2myl13c6uw6l",
+      "q9r1okfaf3pa3f7xd1g3ji",
+      "qydepqtw0xnpg4wsvywvh",
+      "3gafajv859h0435icsaw5h",
+      "fot5aiasxycs6ydbh1vn3q",
+      "by8ao4auf5wsn7tfe2jtgd",
+      "3gny4s7subw5l64g3kosab"
+    ],
+    "goal": "yeah so I want the following to happen I want number one which is all of the following tasks they are for this app which was notification support whatsapp support email support click up support later there's going to be other types of support like uh not to push notifications for website um long versus short uh conversations uh memory support where you can look at the memories being saved and prioritize it um you also have what else what else do you have you have just those for now I think are enough there was a few other ones in my mind there's also the lead support create update support for the tasks themselves when a task is deleted you can filter them like you can only show you only show the ones that are active you don't show the words that are in the past and have finished or have not have not been completed by in the past but they are still available for you to see later so just because it's it's deleted but it's more of an archive not an actual delete there is also so yeah these are like the ones I'm supporting at the moment it's going to be others but you also cron job support where you can ask the AI to do something as a cron job for each of these integrations I talked about hard push reminders access to other apps later and so on and so forth okay",
+    "constraints": {},
+    "id": "rmwb15w0mnqoi31dxcn4yg",
+    "createdAt": "2026-01-26T01:55:20.013Z",
+    "updatedAt": "2026-01-26T01:55:20.054Z"
   }
 ]

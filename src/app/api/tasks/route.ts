@@ -53,6 +53,9 @@ export async function POST(request: NextRequest) {
       tags: body.tags ?? [],
       energyRequirement: (body.energyRequirement || 'medium') as 'low' | 'medium' | 'high',
       context: body.context ?? 'anywhere',
+      kind: (body.kind || 'todo') as 'reminder' | 'todo' | 'habit' | 'daily',
+      projectId: body.projectId ?? undefined,
+      recurrencePerWeek: body.recurrencePerWeek ?? undefined,
     });
 
     return NextResponse.json(task, { status: 201 });

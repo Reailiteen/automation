@@ -187,15 +187,18 @@ export class PlannerAgent implements BaseAgent<PlannerInput, PlannerOutput> {
         title: geminiTask.title || 'Untitled Task',
         description: geminiTask.description || '',
         status: 'pending',
-        priority: geminiTask.priority || 'medium', // Will be calculated by prioritization agent
-        estimatedTime: geminiTask.estimatedTime || 30, // Default 30 minutes
+        priority: geminiTask.priority || 'medium',
+        estimatedTime: geminiTask.estimatedTime || 30,
         focusLevel: geminiTask.focusLevel || 'medium',
         energyRequirement: geminiTask.energyRequirement || 'medium',
         context: geminiTask.context || '',
         subtasks: [],
         dependencies: [],
         tags: geminiTask.tags || [],
-        parentTaskId: planId, // Link to plan
+        parentTaskId: planId,
+        kind: (geminiTask.kind || 'todo') as 'reminder' | 'todo' | 'habit' | 'daily',
+        projectId: geminiTask.projectId ?? undefined,
+        recurrencePerWeek: geminiTask.recurrencePerWeek ?? undefined,
       });
       
       tasks.push(task);

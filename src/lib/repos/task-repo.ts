@@ -1,5 +1,5 @@
-import { Task, Plan, User, Schedule, AgentOutput } from '../models/task';
-import { taskStorage, planStorage, userStorage, scheduleStorage, agentOutputStorage } from '../db/storage';
+import { Task, Plan, User, Schedule, AgentOutput, Project, TaskKind } from '../models/task';
+import { taskStorage, planStorage, projectStorage, userStorage, scheduleStorage, agentOutputStorage } from '../db/storage';
 
 // Utility function to generate IDs
 function generateId(): string {
@@ -80,7 +80,17 @@ export const taskRepo = {
   getByStatus: async (status: Task['status']): Promise<Task[]> => {
     const tasks = await taskStorage.getAll();
     return tasks.filter(task => task.status === status);
-  }
+  },
+
+  getByProject: async (projectId: string): Promise<Task[]> => {
+    const tasks = await taskStorage.getAll();
+    return tasks.filter(task => task.projectId === projectId);
+  },
+
+  getByKind: async (kind: TaskKind): Promise<Task[]> => {
+    const tasks = await taskStorage.getAll();
+    return tasks.filter(task => (task.kind ?? 'todo') === kind);
+  },
 };
 
 // Plan Repository
@@ -136,6 +146,42 @@ export const planRepo = {
     const plans = await planStorage.getAll();
     return plans.filter(plan => plan.status === status);
   }
+};
+
+// Project Repository
+export const projectRepo = {
+  getAll: async (): Promise<Project[]> => await projectStorage.getAll(),
+  getById: async (id: string): Promise<Project | null> => {
+    const p = await projectStorage.byId(id);
+    return p ?? null;
+  },
+  create: async (data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> => {
+    const now = new Date();
+    const project: Project = {
+      ...data,
+      id: generateId(),
+      taskIds: data.taskIds || [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    await projectStorage.save(project);
+    return project;
+  },
+  update: async (id: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>): Promise<Project | null> => {
+    const project = await projectStorage.byId(id);
+    if (!project) return null;
+    const updated = { ...project, ...updates, updatedAt: new Date() };
+    await projectStorage.save(updated);
+    return updated;
+  },
+  delete: async (id: string): Promise<boolean> => {
+    try {
+      await projectStorage.delete(id);
+      return true;
+    } catch {
+      return false;
+    }
+  },
 };
 
 // User Repository

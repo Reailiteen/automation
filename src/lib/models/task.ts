@@ -1,3 +1,6 @@
+/** Task taxonomy: reminders, todos, habits, dailies. Tasks can also belong to a project. */
+export type TaskKind = 'reminder' | 'todo' | 'habit' | 'daily';
+
 export interface Task {
   id: string;
   title: string;
@@ -18,6 +21,24 @@ export interface Task {
   context: string; // e.g., "home", "work", "anywhere"
   isRecurring?: boolean;
   recurrencePattern?: string;
+  /** reminder | todo | habit | daily. Default 'todo'. */
+  kind?: TaskKind;
+  /** If set, task belongs to a project; its hours don't add to pressure (project's weeklyHours count instead). */
+  projectId?: string;
+  /** Times per week for habit/daily. Default: reminder/todo 1, daily 7, habit 3. */
+  recurrencePerWeek?: number;
+}
+
+/** Project: fixed weekly hours, flexible (no specific time/day). Tasks inside describe the allocation. */
+export interface Project {
+  id: string;
+  title: string;
+  description?: string;
+  /** Hours per week committed to this project. Counted once in pressure; task hours inside do not add. */
+  weeklyHours: number;
+  taskIds: string[]; // Task IDs that belong to this project
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Plan {

@@ -62,12 +62,19 @@ const TaskCard = (
         <CardHeader>
           <div className="flex justify-between items-start gap-3">
             <CardTitle className="text-base font-medium leading-snug flex-1">{task.title}</CardTitle>
-            <span className={cn(
-              "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium flex-shrink-0",
-              getFocusLevelBadge(task.focusLevel)
-            )}>
-              {task.focusLevel}
-            </span>
+            <div className="flex flex-wrap items-center gap-1.5 flex-shrink-0">
+              {(task.kind && task.kind !== "todo") && (
+                <span className="inline-flex rounded-md px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground capitalize">
+                  {task.kind}
+                </span>
+              )}
+              <span className={cn(
+                "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium",
+                getFocusLevelBadge(task.focusLevel)
+              )}>
+                {task.focusLevel}
+              </span>
+            </div>
           </div>
           {task.description && status === 'detailed' && (
             <CardDescription className="text-sm overflow-hidden">

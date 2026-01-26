@@ -119,6 +119,8 @@ THEN, break down these goals into specific, actionable tasks. For each task, pro
 5. Energy requirement (low, medium, or high)
 6. Appropriate context (home, work, or anywhere)
 7. Relevant tags (max 3)
+8. kind: one of "reminder" (one-off time-based), "todo" (general actionable item), "habit" (recurring, no fixed time), "daily" (recurring daily)
+9. recurrencePerWeek: 1 for reminder/todo, 7 for daily, 3 for habit (times per week)
 
 Return ONLY valid JSON. Do not wrap in markdown code blocks (no \`\`\`).
 Use this structure:
@@ -133,7 +135,9 @@ Use this structure:
       "focusLevel": "shallow|medium|deep",
       "energyRequirement": "low|medium|high",
       "context": "home|work|anywhere",
-      "tags": ["tag1", "tag2"]
+      "tags": ["tag1", "tag2"],
+      "kind": "reminder|todo|habit|daily",
+      "recurrencePerWeek": number
     }
   ]
 }`;

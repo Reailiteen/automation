@@ -15,24 +15,21 @@ const Navigation = () => {
     { name: "Dashboard", href: "/" },
     { name: "Chat", href: "/chat" },
     { name: "Tasks", href: "/tasks" },
-    { name: "Plans", href: "/plans" },
+    { name: "Pressure", href: "/pressure" },
     { name: "Schedule", href: "/schedule" },
-    { name: "Test Gemini", href: "/test-gemini" },
-    { name: "Test Voice", href: "/test-voice" },
-    { name: "Agents", href: "/agents" },
   ];
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="container mx-auto flex h-16 items-center justify-between px-6">
-        <div className="flex items-center">
-          <span className="text-lg font-semibold text-foreground">
+      <nav className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center min-w-0">
+          <span className="text-base sm:text-lg font-semibold text-foreground truncate">
             AI Task Manager
           </span>
         </div>
 
         {/* Desktop navigation */}
-        <ul className="hidden md:flex items-center gap-1">
+        <ul className="hidden md:flex items-center gap-1 flex-shrink-0">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -86,9 +83,9 @@ const Navigation = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="absolute top-16 left-0 right-0 border-b bg-background md:hidden"
+              className="absolute top-14 sm:top-16 left-0 right-0 border-b bg-background md:hidden max-h-[70vh] overflow-y-auto"
             >
-              <ul className="container mx-auto flex flex-col gap-1 p-4">
+              <ul className="container mx-auto flex flex-col gap-1 p-4 pb-6">
                 {navItems.map((item) => (
                   <li key={item.name}>
                     <Link

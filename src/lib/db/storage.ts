@@ -1,11 +1,12 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Task, Plan, User, Schedule, AgentOutput } from '../models/task';
+import { Task, Plan, User, Schedule, AgentOutput, Project } from '../models/task';
 
 // Base data directory
 const DATA_DIR = path.join(process.cwd(), 'data');
 const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
 const PLANS_FILE = path.join(DATA_DIR, 'plans.json');
+const PROJECTS_FILE = path.join(DATA_DIR, 'projects.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SCHEDULES_FILE = path.join(DATA_DIR, 'schedules.json');
 const AGENT_OUTPUTS_FILE = path.join(DATA_DIR, 'agent-outputs.json');
@@ -16,7 +17,7 @@ async function ensureDataDir() {
     await fs.mkdir(DATA_DIR, { recursive: true });
     
     // Create empty JSON files if they don't exist
-    for (const file of [TASKS_FILE, PLANS_FILE, USERS_FILE, SCHEDULES_FILE, AGENT_OUTPUTS_FILE]) {
+    for (const file of [TASKS_FILE, PLANS_FILE, PROJECTS_FILE, USERS_FILE, SCHEDULES_FILE, AGENT_OUTPUTS_FILE]) {
       try {
         await fs.access(file);
       } catch {
@@ -111,6 +112,26 @@ export const planStorage = {
     const filtered = plans.filter(plan => plan.id !== id);
     await writeFile(PLANS_FILE, filtered);
   }
+};
+
+// Project operations
+export const projectStorage = {
+  getAll: (): Promise<Project[]> => readFile<Project>(PROJECTS_FILE),
+  byId: async (id: string): Promise<Project | undefined> => {
+    const projects = await readFile<Project>(PROJECTS_FILE);
+    return projects.find(p => p.id === id);
+  },
+  save: async (project: Project): Promise<void> => {
+    const projects = await readFile<Project>(PROJECTS_FILE);
+    const index = projects.findIndex(p => p.id === project.id);
+    if (index >= 0) projects[index] = project;
+    else projects.push(project);
+    await writeFile(PROJECTS_FILE, projects);
+  },
+  delete: async (id: string): Promise<void> => {
+    const projects = await readFile<Project>(PROJECTS_FILE);
+    await writeFile(PROJECTS_FILE, projects.filter(p => p.id !== id));
+  },
 };
 
 // User operations

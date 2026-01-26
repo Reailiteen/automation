@@ -113,7 +113,7 @@ const HomePage = () => {
   if (!authLoading && !user) {
     return (
       <Layout>
-        <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="min-h-[60vh] flex items-center justify-center px-2">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -121,22 +121,22 @@ const HomePage = () => {
             className="max-w-md w-full"
           >
             <Card className="bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-indigo-600/20 border-2 border-blue-500/30">
-              <CardHeader className="text-center">
+              <CardHeader className="text-center px-4 sm:px-6">
                 <div className="inline-flex p-3 rounded-full bg-white/10 mb-4">
                   <Sparkles className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-3xl font-bold text-white mb-2">
+                <CardTitle className="text-2xl sm:text-3xl font-bold text-white mb-2">
                   Welcome to Your Voice-First Planning Assistant
                 </CardTitle>
-                <CardDescription className="text-white/80 text-base">
+                <CardDescription className="text-white/80 text-sm sm:text-base">
                   Get started by creating an account to transform your voice input into structured, actionable items.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 px-4 sm:px-6">
                 <Link href="/auth/signup" className="block">
                   <Button
                     size="lg"
-                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0 shadow-lg"
+                    className="w-full min-h-[44px] bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0 shadow-lg"
                   >
                     <UserPlus className="mr-2 h-5 w-5" />
                     Create Account
@@ -146,7 +146,7 @@ const HomePage = () => {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="w-full border-gray-600 text-white hover:bg-gray-800"
+                    className="w-full min-h-[44px] border-gray-600 text-white hover:bg-gray-800"
                   >
                     <LogIn className="mr-2 h-5 w-5" />
                     Sign In
@@ -185,7 +185,7 @@ const HomePage = () => {
         )}
       </AnimatePresence>
 
-      <div className="space-y-12 max-w-7xl mx-auto">
+      <div className="space-y-8 sm:space-y-12 max-w-7xl mx-auto">
         {/* Welcome Section */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -193,10 +193,10 @@ const HomePage = () => {
           transition={{ duration: 0.3 }}
           className="text-center md:text-left"
         >
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-3">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-3">
             Welcome back
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-base sm:text-lg">
             Here's what your AI assistants have prepared for today.
           </p>
         </motion.div>
@@ -232,23 +232,23 @@ const HomePage = () => {
             transition={{ duration: 0.3, delay: 0.1 }}
           >
             <Card className="relative overflow-hidden bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-indigo-600/20 border-2 border-blue-500/30">
-              <div className="text-center py-12 px-6">
-                <div className="inline-flex p-3 rounded-full bg-white/10 mb-6">
+              <div className="text-center py-8 sm:py-12 px-4 sm:px-6">
+                <div className="inline-flex p-3 rounded-full bg-white/10 mb-4 sm:mb-6">
                   <Sparkles className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-3xl font-bold text-white mb-4">
+                <CardTitle className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4">
                   No active task
                 </CardTitle>
-                <CardDescription className="mb-8 max-w-md mx-auto text-white/80 text-base">
-                  Looks like there are no active tasks at the moment. Get started by creating a new plan for your AI assistant.
+                <CardDescription className="mb-6 sm:mb-8 max-w-md mx-auto text-white/80 text-sm sm:text-base">
+                  No active tasks right now. Tap below to talk your mind—type or speak, and we’ll turn it into a plan.
                 </CardDescription>
                 <Button
                   size="lg"
                   onClick={() => setShowTaskForm(true)}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0 shadow-lg"
+                  className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0 shadow-lg"
                 >
                   <Plus className="mr-2 h-5 w-5" />
-                  Create Your First Plan
+                  Talk your mind
                 </Button>
               </div>
             </Card>
@@ -269,7 +269,7 @@ const HomePage = () => {
               </div>
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1">
                     <span className="text-sm text-gray-400">Total tasks: {tasksArray.length}</span>
                     <span className="text-sm text-gray-400">Time allocated: {tasksArray.reduce((total, task) => total + (task.estimatedTime || 0), 0)}m</span>
                   </div>
@@ -290,26 +290,26 @@ const HomePage = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-4">
                 <Target className="h-5 w-5 text-gray-400" />
-                <h3 className="text-lg font-semibold text-white">Active Plans</h3>
+                <h3 className="text-lg font-semibold text-white">Weekly pressure</h3>
               </div>
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
-                        <span className="text-purple-400 font-semibold">N</span>
+                      <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30 shrink-0">
+                        <span className="text-amber-400 font-semibold">P</span>
                       </div>
-                      <span className="text-white font-medium">Limitless</span>
+                      <span className="text-white font-medium">This week</span>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-gray-400">2 Plans</span>
-                      <span className="text-sm font-semibold text-cyan-400">78% Completion rate</span>
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <span className="text-sm text-gray-400">Hours + items</span>
+                      <span className="text-sm font-semibold text-cyan-400">View</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              <Link href="/plans" className="inline-flex items-center gap-1 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
-                View All Plans
+              <Link href="/pressure" className="inline-flex items-center gap-1 text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
+                View pressure
                 <span>→</span>
               </Link>
             </div>
@@ -352,12 +352,13 @@ const HomePage = () => {
 
         {/* Today's Tasks List */}
         <div>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-semibold">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-semibold">
               Today's Tasks
             </h2>
             <Button
               onClick={() => setShowTaskForm(true)}
+              className="w-full sm:w-auto"
             >
               <Plus className="mr-2 h-4 w-4" />
               New Task

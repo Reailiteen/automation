@@ -6,8 +6,7 @@ import { VoiceInput } from "@/components/ui/voice-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DuplicateConfirmationModal } from "@/components/tasks/duplicate-confirmation-modal";
-import { X, Mic, Type, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 import { SimilarItem } from "@/lib/services/memory-service";
 
 interface TaskCreationFormProps {
@@ -16,7 +15,6 @@ interface TaskCreationFormProps {
 }
 
 export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormProps) {
-  const [inputMode, setInputMode] = useState<"text" | "voice">("text");
   const [text, setText] = useState("");
   const [transcription, setTranscription] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,10 +24,10 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
   const [pendingInput, setPendingInput] = useState<string>("");
 
   const handleVoiceTranscription = (transcribedText: string) => {
-    setTranscription(transcribedText);
-    // Also update the main text field with transcription
-    setText(transcribedText);
-    setInputMode("text");
+    const trimmed = transcribedText.trim();
+    if (!trimmed) return;
+    setText((prev) => (prev ? `${prev} ${trimmed}` : trimmed));
+    setTranscription((prev) => (prev ? `${prev} ${trimmed}` : trimmed));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,24 +43,13 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
     setError(null);
 
     try {
-      // Use the planner agent to create tasks from the user's input
-      // Extract title and description if provided, otherwise use full text as goal
-      const lines = inputText.split('\n');
-      const providedTitle = lines[0] || '';
-      const providedDescription = lines.slice(1).join('\n') || '';
-      
-      // Use the full input as the goal, AI will generate title/description if not provided
-      const goals = providedTitle && providedDescription 
-        ? [providedTitle, providedDescription].filter(Boolean)
-        : [inputText];
-
       const response = await fetch("/api/agents/planner", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          goals,
+          goals: [inputText],
           constraints: {},
         }),
       });
@@ -189,110 +176,62 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
         onCreateNew={handleCreateNew}
       />
       
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 overflow-y-auto bg-black/50 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.2 }}
-          className="w-full max-w-2xl"
+          className="w-full max-w-2xl my-4 sm:my-8"
         >
         <Card className="bg-gray-900 border-gray-700">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <CardTitle className="text-2xl font-bold text-white">
-                Create a plan from your goals
+          <CardHeader className="px-4 sm:px-6">
+            <div className="flex items-start justify-between gap-3">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-white leading-tight">
+                Talk your mind
               </CardTitle>
               <button
+                type="button"
                 onClick={onClose}
-                className="p-2 rounded-md hover:bg-gray-800 transition-smooth text-gray-400 hover:text-white"
+                className="p-2 -m-2 rounded-md hover:bg-gray-800 transition-smooth text-gray-400 hover:text-white touch-manipulation shrink-0"
+                aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <CardDescription className="text-gray-400 mt-1">
-              Describe what you want to accomplish—type or say it. The AI will turn it into a plan and tasks.
+            <CardDescription className="text-gray-400 mt-1 text-sm sm:text-base">
+              Type or say what you want to accomplish. Keep recording to add more—each clip appends.
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 px-4 sm:px-6">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Plan Title - Optional */}
-              <div>
-                <label htmlFor="plan-title" className="block text-sm font-medium text-gray-300 mb-2">
-                  Title <span className="text-gray-500 text-xs">(optional)</span>
-                </label>
-                <input
-                  id="plan-title"
-                  type="text"
-                  value={text.split('\n')[0] || ''}
-                  onChange={(e) => {
-                    const lines = text.split('\n');
-                    lines[0] = e.target.value;
-                    setText(lines.join('\n'));
-                  }}
-                  placeholder="e.g. Meeting prep & system design"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-smooth"
-                />
-              </div>
-
-              {/* Main input: what you want → tasks */}
               <div>
                 <label htmlFor="plan-description" className="block text-sm font-medium text-gray-300 mb-2">
-                  What do you want to turn into tasks? <span className="text-gray-500 text-xs">(required)</span>
+                  Description <span className="text-gray-500 text-xs">(required)</span>
                 </label>
                 <textarea
                   id="plan-description"
-                  value={text.includes('\n') ? text.split('\n').slice(1).join('\n') : text}
-                  onChange={(e) => {
-                    const title = text.split('\n')[0] || '';
-                    setText(title ? `${title}\n${e.target.value}` : e.target.value);
-                  }}
-                  placeholder="e.g. Prepare for tomorrow's meeting, finish system design doc by Feb 6, brush teeth twice daily"
-                  className="w-full min-h-[100px] p-4 rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-smooth resize-none"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="e.g. Prepare for tomorrow's meeting, finish system design doc, brush teeth twice daily"
+                  className="w-full min-h-[100px] p-4 rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-smooth resize-none text-base"
                 />
               </div>
 
-              {/* Voice Input Section */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
-                  Or say it with voice
-                </label>
-                <div className="flex flex-col items-center justify-center py-8 space-y-4 bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-700">
-                  <div className="relative" style={{ transform: 'scale(1.5)' }}>
-                    <VoiceInput
-                      onTranscriptionComplete={handleVoiceTranscription}
-                      onError={(err) => setError(err)}
-                    />
-                  </div>
-                  <p className="text-sm text-gray-400 text-center max-w-md px-4">
-                    Click to record, then describe what you want to accomplish
-                  </p>
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                <label className="text-sm font-medium text-gray-300 shrink-0">Voice</label>
+                <div className="flex items-center gap-2">
+                  <VoiceInput
+                    compact
+                    silenceThreshold={30000}
+                    onTranscriptionComplete={handleVoiceTranscription}
+                    onError={(err) => setError(err)}
+                  />
+                  <span className="text-xs text-gray-500 max-w-[140px]">
+                    Tap to record. Stops after 30s silence or when you tap again. Appends to text.
+                  </span>
                 </div>
-                
-                {/* Transcription Output */}
-                {transcription && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 p-4 rounded-lg bg-gray-800/70 border border-gray-700"
-                  >
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Transcription:
-                    </label>
-                    <p className="text-sm text-white whitespace-pre-wrap">{transcription}</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setText(transcription);
-                        setTranscription("");
-                      }}
-                      className="mt-2 text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
-                    >
-                      Use this text →
-                    </button>
-                  </motion.div>
-                )}
               </div>
 
               {error && (
@@ -305,12 +244,12 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
                 </motion.div>
               )}
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={onClose}
-                  className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800"
+                  className="flex-1 min-h-[44px] border-gray-700 text-gray-300 hover:bg-gray-800 touch-manipulation"
                   disabled={isSubmitting}
                 >
                   Cancel
@@ -318,9 +257,9 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
                 <Button
                   type="submit"
                   disabled={!text.trim() || isSubmitting}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0"
+                  className="flex-1 min-h-[44px] bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 touch-manipulation"
                 >
-                  {isSubmitting ? "Creating..." : "Create Plan"}
+                  {isSubmitting ? "Creating…" : "Create"}
                 </Button>
               </div>
             </form>
