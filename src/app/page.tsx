@@ -7,9 +7,10 @@ import TaskCard from "@/components/tasks/task-card";
 import { TaskCreationForm } from "@/components/tasks/task-creation-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Calendar, Target, Activity, Sparkles } from "lucide-react";
+import { Plus, Calendar, Target, Activity, Sparkles, LogIn, UserPlus } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useAuth } from "@/components/auth/auth-provider";
 
 interface Task {
   id: string;
@@ -32,51 +33,146 @@ interface Task {
 }
 
 const HomePage = () => {
+  const { user, loading: authLoading } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTaskForm, setShowTaskForm] = useState(false);
 
   useEffect(() => {
+    // Only fetch tasks if user is authenticated
+    if (authLoading) return;
+    
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     // Fetch tasks from API
     const fetchTasks = async () => {
       try {
         const response = await fetch('/api/tasks');
+        if (!response.ok) {
+          if (response.status === 401) {
+            // User not authenticated
+            setTasks([]);
+            return;
+          }
+          const errorData = await response.json();
+          console.error('Error fetching tasks:', errorData);
+          setTasks([]);
+          return;
+        }
         const tasksData = await response.json();
-        setTasks(tasksData);
+        // Ensure tasksData is an array
+        if (Array.isArray(tasksData)) {
+          setTasks(tasksData);
+        } else {
+          console.error('Invalid tasks data format:', tasksData);
+          setTasks([]);
+        }
       } catch (error) {
         console.error('Error fetching tasks:', error);
+        setTasks([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchTasks();
-  }, []);
+  }, [user, authLoading]);
 
   const handleTaskCreated = async () => {
     // Refresh tasks after creation
+    if (!user) return;
+    
     try {
       const response = await fetch('/api/tasks');
+      if (!response.ok) {
+        console.error('Error refreshing tasks:', await response.json());
+        return;
+      }
       const tasksData = await response.json();
-      setTasks(tasksData);
+      if (Array.isArray(tasksData)) {
+        setTasks(tasksData);
+      }
     } catch (error) {
       console.error('Error fetching tasks:', error);
     }
   };
 
-  const activeTasks = tasks.filter(task => task.status === 'in-progress')[0];
+  // Ensure tasks is always an array before filtering - THIS IS THE KEY FIX
+  const tasksArray = Array.isArray(tasks) ? tasks : [];
+  const activeTasks = tasksArray.filter(task => task.status === 'in-progress')[0];
   // Show all tasks except the active one
-  const todayTasks = tasks.filter(task => {
+  const todayTasks = tasksArray.filter(task => {
     if (!activeTasks) return true;
     return task.id !== activeTasks.id;
   });
-  
-  // Debug: Log tasks to console
-  useEffect(() => {
-    if (tasks.length > 0) {
-      console.log('Tasks loaded:', tasks.length, tasks);
-    }
-  }, [tasks]);
+
+  // Show login/signup prompt if not authenticated
+  if (!authLoading && !user) {
+    return (
+      <Layout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="max-w-md w-full"
+          >
+            <Card className="bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-indigo-600/20 border-2 border-blue-500/30">
+              <CardHeader className="text-center">
+                <div className="inline-flex p-3 rounded-full bg-white/10 mb-4">
+                  <Sparkles className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-3xl font-bold text-white mb-2">
+                  Welcome to Your Voice-First Planning Assistant
+                </CardTitle>
+                <CardDescription className="text-white/80 text-base">
+                  Get started by creating an account to transform your voice input into structured, actionable items.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Link href="/auth/signup" className="block">
+                  <Button
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0 shadow-lg"
+                  >
+                    <UserPlus className="mr-2 h-5 w-5" />
+                    Create Account
+                  </Button>
+                </Link>
+                <Link href="/auth/login" className="block">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full border-gray-600 text-white hover:bg-gray-800"
+                  >
+                    <LogIn className="mr-2 h-5 w-5" />
+                    Sign In
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Show loading state while checking auth
+  if (authLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+            <p className="mt-4 text-gray-400">Loading...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -174,8 +270,8 @@ const HomePage = () => {
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-400">Total tasks: {tasks.length}</span>
-                    <span className="text-sm text-gray-400">Time allocated: {tasks.reduce((total, task) => total + task.estimatedTime, 0)}m</span>
+                    <span className="text-sm text-gray-400">Total tasks: {tasksArray.length}</span>
+                    <span className="text-sm text-gray-400">Time allocated: {tasksArray.reduce((total, task) => total + (task.estimatedTime || 0), 0)}m</span>
                   </div>
                 </CardContent>
               </Card>

@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { taskRepo } from '@/lib/repos/task-repo';
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const task = await taskRepo.getById(params.id);
+    const { id } = await params;
+    const task = await taskRepo.getById(id);
     
     if (!task) {
       return NextResponse.json(
@@ -28,8 +29,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     const updates = await request.json();
-    const task = await taskRepo.update(params.id, updates);
+    const task = await taskRepo.update(id, updates);
     
     if (!task) {
       return NextResponse.json(
@@ -50,7 +52,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const success = await taskRepo.delete(params.id);
+    const { id } = await params;
+    const success = await taskRepo.delete(id);
     
     if (!success) {
       return NextResponse.json(

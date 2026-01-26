@@ -45,7 +45,7 @@ export class RouterAgent implements BaseAgent<RouterInput, RouterOutput> {
           reasoning: 'Failed to classify input, defaulting to question',
         } as RouterOutput,
         confidence: 0.5,
-        metadata: { error: error.message },
+        metadata: { error: error instanceof Error ? error.message : String(error) },
       };
     }
   }

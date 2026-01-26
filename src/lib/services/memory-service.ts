@@ -1,6 +1,7 @@
 import { taskRepo, planRepo, agentOutputRepo } from '../repos/task-repo';
 import { Task, Plan, AgentOutput } from '../models/task';
 import GeminiService from './gemini';
+import { parseJsonFromGemini } from '../utils';
 
 export interface SimilarItem {
   item: Task | Plan;
@@ -108,7 +109,7 @@ Only include items with similarity >= ${threshold}.`;
 
     try {
       const response = await this.geminiService.generateContent(prompt);
-      const result = JSON.parse(response);
+      const result = parseJsonFromGemini(response) as { similarItems?: Array<{ id: string; type: 'plan' | 'task'; similarity: number; reason?: string }> };
       
       if (result.similarItems && Array.isArray(result.similarItems)) {
         for (const item of result.similarItems) {

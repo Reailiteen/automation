@@ -1,1 +1,65 @@
-[]
+[
+  {
+    "title": "Prepare & Attend 3 PM Meeting",
+    "description": "Ensure readiness and timely attendance for the scheduled meeting tomorrow at 3:00 PM.",
+    "status": "pending",
+    "priority": "medium",
+    "estimatedTime": 90,
+    "focusLevel": "medium",
+    "energyRequirement": "medium",
+    "context": "anywhere",
+    "subtasks": [],
+    "dependencies": [],
+    "tags": [
+      "meeting",
+      "appointment",
+      "tomorrow"
+    ],
+    "parentTaskId": "ae3hrbc26u55mp2ow7ctmp",
+    "id": "zthlen7nxmj03tnr959asdm",
+    "createdAt": "2026-01-26T00:44:21.844Z",
+    "updatedAt": "2026-01-26T00:44:21.844Z"
+  },
+  {
+    "title": "Finalize Senior 1 App Plan",
+    "description": "Complete and review the entire Senior 1 application plan to meet the deadline tomorrow by 5:00 PM.",
+    "status": "pending",
+    "priority": "medium",
+    "estimatedTime": 180,
+    "focusLevel": "deep",
+    "energyRequirement": "high",
+    "context": "work",
+    "subtasks": [],
+    "dependencies": [],
+    "tags": [
+      "application",
+      "planning",
+      "deadline"
+    ],
+    "parentTaskId": "ae3hrbc26u55mp2ow7ctmp",
+    "id": "h4ic2pfmz17am446q4inav",
+    "createdAt": "2026-01-26T00:44:21.856Z",
+    "updatedAt": "2026-01-26T00:44:21.856Z"
+  },
+  {
+    "title": "Start Daily Teeth Brushing Routine",
+    "description": "Begin the consistent daily practice of brushing teeth to establish a new hygiene habit.",
+    "status": "pending",
+    "priority": "medium",
+    "estimatedTime": 5,
+    "focusLevel": "shallow",
+    "energyRequirement": "low",
+    "context": "home",
+    "subtasks": [],
+    "dependencies": [],
+    "tags": [
+      "habit",
+      "health",
+      "routine"
+    ],
+    "parentTaskId": "ae3hrbc26u55mp2ow7ctmp",
+    "id": "4w245v7wcasm5lo2gak0km",
+    "createdAt": "2026-01-26T00:44:21.860Z",
+    "updatedAt": "2026-01-26T00:44:21.860Z"
+  }
+]

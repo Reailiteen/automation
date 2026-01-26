@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Get tasks based on provided IDs
     const tasks = await Promise.all(
-      taskIds.map(id => taskRepo.getById(id))
+      (taskIds as string[]).map((id: string) => taskRepo.getById(id))
     );
     
     // Filter out any null tasks
@@ -60,8 +60,8 @@ export async function GET(request: NextRequest) {
     const tasks = await taskRepo.getAll();
     
     // Create mock completion history (in a real app this would come from database)
-    const completionHistory = [];
-    const userFeedback = [];
+    const completionHistory: { taskId: string; plannedTime: number; actualTime: number; quality: 'poor' | 'good' | 'excellent' }[] = [];
+    const userFeedback: { task: string; difficulty: 'too-easy' | 'just-right' | 'too-hard'; enjoyment: 'hated' | 'neutral' | 'enjoyed' }[] = [];
 
     const reflectionAgent = new ReflectionAgent();
     const result = await reflectionAgent.process({

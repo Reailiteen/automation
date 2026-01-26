@@ -120,7 +120,8 @@ THEN, break down these goals into specific, actionable tasks. For each task, pro
 6. Appropriate context (home, work, or anywhere)
 7. Relevant tags (max 3)
 
-Return your response as JSON following this structure:
+Return ONLY valid JSON. Do not wrap in markdown code blocks (no \`\`\`).
+Use this structure:
 {
   "planTitle": "generated title from user input",
   "planDescription": "generated description from user input",

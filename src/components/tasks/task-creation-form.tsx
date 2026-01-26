@@ -37,7 +37,7 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
     // Allow submission with just voice input - text can be empty if voice was used
     const inputText = text.trim();
     if (!inputText) {
-      setError("Please provide input via text or voice");
+      setError("Describe what you want to accomplish in the box above or via voice.");
       return;
     }
 
@@ -201,7 +201,7 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
           <CardHeader>
             <div className="flex items-start justify-between">
               <CardTitle className="text-2xl font-bold text-white">
-                Create Your First Plan
+                Create a plan from your goals
               </CardTitle>
               <button
                 onClick={onClose}
@@ -210,6 +210,9 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
                 <X className="h-5 w-5" />
               </button>
             </div>
+            <CardDescription className="text-gray-400 mt-1">
+              Describe what you want to accomplish—type or say it. The AI will turn it into a plan and tasks.
+            </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6">
@@ -217,7 +220,7 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
               {/* Plan Title - Optional */}
               <div>
                 <label htmlFor="plan-title" className="block text-sm font-medium text-gray-300 mb-2">
-                  Plan Title <span className="text-gray-500 text-xs">(optional - AI will generate)</span>
+                  Title <span className="text-gray-500 text-xs">(optional)</span>
                 </label>
                 <input
                   id="plan-title"
@@ -228,24 +231,24 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
                     lines[0] = e.target.value;
                     setText(lines.join('\n'));
                   }}
-                  placeholder="Enter plan title (optional)..."
+                  placeholder="e.g. Meeting prep & system design"
                   className="w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-smooth"
                 />
               </div>
 
-              {/* Description - Optional */}
+              {/* Main input: what you want → tasks */}
               <div>
                 <label htmlFor="plan-description" className="block text-sm font-medium text-gray-300 mb-2">
-                  Description <span className="text-gray-500 text-xs">(optional - AI will generate)</span>
+                  What do you want to turn into tasks? <span className="text-gray-500 text-xs">(required)</span>
                 </label>
                 <textarea
                   id="plan-description"
-                  value={text.includes('\n') ? text.split('\n').slice(1).join('\n') : ''}
+                  value={text.includes('\n') ? text.split('\n').slice(1).join('\n') : text}
                   onChange={(e) => {
                     const title = text.split('\n')[0] || '';
                     setText(title ? `${title}\n${e.target.value}` : e.target.value);
                   }}
-                  placeholder="Describe your plan (optional)..."
+                  placeholder="e.g. Prepare for tomorrow's meeting, finish system design doc by Feb 6, brush teeth twice daily"
                   className="w-full min-h-[100px] p-4 rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-smooth resize-none"
                 />
               </div>
@@ -253,7 +256,7 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
               {/* Voice Input Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-3">
-                  Voice Input
+                  Or say it with voice
                 </label>
                 <div className="flex flex-col items-center justify-center py-8 space-y-4 bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-700">
                   <div className="relative" style={{ transform: 'scale(1.5)' }}>
@@ -263,7 +266,7 @@ export function TaskCreationForm({ onClose, onTaskCreated }: TaskCreationFormPro
                     />
                   </div>
                   <p className="text-sm text-gray-400 text-center max-w-md px-4">
-                    Click to record or speak your task
+                    Click to record, then describe what you want to accomplish
                   </p>
                 </div>
                 

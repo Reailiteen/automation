@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "title": "Tomorrow's Schedule & New Habit Start",
+    "description": "Manage a critical meeting, finalize a senior application plan by tomorrow's deadline, and establish a new daily oral hygiene habit.",
+    "status": "draft",
+    "tasks": [
+      "zthlen7nxmj03tnr959asdm",
+      "h4ic2pfmz17am446q4inav",
+      "4w245v7wcasm5lo2gak0km"
+    ],
+    "goal": "Hey",
+    "constraints": {},
+    "id": "ae3hrbc26u55mp2ow7ctmp",
+    "createdAt": "2026-01-26T00:44:21.836Z",
+    "updatedAt": "2026-01-26T00:44:21.863Z"
+  }
+]

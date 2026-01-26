@@ -1,1 +1,124 @@
-[]
+[
+  {
+    "agentType": "planner",
+    "input": {
+      "user": {
+        "name": "Default User",
+        "email": "user@example.com",
+        "preferences": {
+          "workingHours": [],
+          "energyProfile": {
+            "peakHours": [],
+            "mediumHours": [],
+            "lowHours": [],
+            "recoveryTime": 15
+          },
+          "taskBreakingPreference": "automatic",
+          "schedulingStyle": "flexible",
+          "notificationSettings": {
+            "taskReminders": true,
+            "scheduleChanges": true,
+            "dailySummary": true
+          }
+        },
+        "id": "default-user",
+        "createdAt": "2026-01-12T09:51:36.468Z",
+        "updatedAt": "2026-01-12T09:51:36.468Z"
+      },
+      "goals": [
+        "Hey",
+        "I need to meet someone tommorow at 3:00, finish a plan for my senior 1 app plan by tommorow at 5 , and i need to start brushign my teeth everyday"
+      ],
+      "constraints": {},
+      "forceCreate": false
+    },
+    "output": {
+      "plan": {
+        "title": "Tomorrow's Schedule & New Habit Start",
+        "description": "Manage a critical meeting, finalize a senior application plan by tomorrow's deadline, and establish a new daily oral hygiene habit.",
+        "status": "draft",
+        "tasks": [],
+        "goal": "Hey",
+        "constraints": {},
+        "id": "ae3hrbc26u55mp2ow7ctmp",
+        "createdAt": "2026-01-26T00:44:21.836Z",
+        "updatedAt": "2026-01-26T00:44:21.836Z"
+      },
+      "tasks": [
+        {
+          "title": "Prepare & Attend 3 PM Meeting",
+          "description": "Ensure readiness and timely attendance for the scheduled meeting tomorrow at 3:00 PM.",
+          "status": "pending",
+          "priority": "medium",
+          "estimatedTime": 90,
+          "focusLevel": "medium",
+          "energyRequirement": "medium",
+          "context": "anywhere",
+          "subtasks": [],
+          "dependencies": [],
+          "tags": [
+            "meeting",
+            "appointment",
+            "tomorrow"
+          ],
+          "parentTaskId": "ae3hrbc26u55mp2ow7ctmp",
+          "id": "zthlen7nxmj03tnr959asdm",
+          "createdAt": "2026-01-26T00:44:21.844Z",
+          "updatedAt": "2026-01-26T00:44:21.844Z"
+        },
+        {
+          "title": "Finalize Senior 1 App Plan",
+          "description": "Complete and review the entire Senior 1 application plan to meet the deadline tomorrow by 5:00 PM.",
+          "status": "pending",
+          "priority": "medium",
+          "estimatedTime": 180,
+          "focusLevel": "deep",
+          "energyRequirement": "high",
+          "context": "work",
+          "subtasks": [],
+          "dependencies": [],
+          "tags": [
+            "application",
+            "planning",
+            "deadline"
+          ],
+          "parentTaskId": "ae3hrbc26u55mp2ow7ctmp",
+          "id": "h4ic2pfmz17am446q4inav",
+          "createdAt": "2026-01-26T00:44:21.856Z",
+          "updatedAt": "2026-01-26T00:44:21.856Z"
+        },
+        {
+          "title": "Start Daily Teeth Brushing Routine",
+          "description": "Begin the consistent daily practice of brushing teeth to establish a new hygiene habit.",
+          "status": "pending",
+          "priority": "medium",
+          "estimatedTime": 5,
+          "focusLevel": "shallow",
+          "energyRequirement": "low",
+          "context": "home",
+          "subtasks": [],
+          "dependencies": [],
+          "tags": [
+            "habit",
+            "health",
+            "routine"
+          ],
+          "parentTaskId": "ae3hrbc26u55mp2ow7ctmp",
+          "id": "4w245v7wcasm5lo2gak0km",
+          "createdAt": "2026-01-26T00:44:21.860Z",
+          "updatedAt": "2026-01-26T00:44:21.860Z"
+        }
+      ],
+      "reasoning": [
+        "Loaded context: 0 plans, 0 tasks",
+        "Found 0 related plans, 0 related tasks",
+        "Generated plan title: \"Tomorrow's Schedule & New Habit Start\"",
+        "Generated plan description: \"Manage a critical meeting, finalize a senior application plan by tomorrow's deadline, and establish a new daily oral hygiene habit.\"",
+        "Analyzed 2 goals and created 3 tasks using AI",
+        "Estimated total effort: 275 minutes"
+      ]
+    },
+    "confidence": 0.8,
+    "timestamp": "2026-01-26T00:44:21.866Z"
+  }
+]

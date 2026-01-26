@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Get tasks based on provided IDs
     const tasks = await Promise.all(
-      taskIds.map(id => taskRepo.getById(id))
+      (taskIds as string[]).map((id: string) => taskRepo.getById(id))
     );
     
     // Filter out any null tasks
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       tasks,
       date,
       existingEvents: [],
-      constraints: null
+      constraints: undefined
     });
 
     return NextResponse.json(result);

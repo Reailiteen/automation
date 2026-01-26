@@ -239,7 +239,7 @@ export class PrioritizationAgent implements BaseAgent<PrioritizationInput, Prior
     output: PrioritizationOutput
   ): Promise<void> {
     await agentOutputRepo.create({
-      agentType: 'prioritization',
+      agentType: 'prioritizer',
       input: input,
       output: output,
       confidence: 0.9

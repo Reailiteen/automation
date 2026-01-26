@@ -9,6 +9,7 @@ import {
 import { taskRepo, planRepo, userRepo } from '../repos/task-repo';
 import GeminiService from '../services/gemini';
 import { memoryService, SimilarItem } from '../services/memory-service';
+import { parseJsonFromGemini } from '../utils';
 
 export class PlannerAgent implements BaseAgent<PlannerInput, PlannerOutput> {
   type = 'planner';
@@ -81,9 +82,9 @@ export class PlannerAgent implements BaseAgent<PlannerInput, PlannerOutput> {
       });
       
       const geminiResponse = await geminiService.generateContent(prompt);
-      let parsedResponse;
+      let parsedResponse: { planTitle?: string; planDescription?: string; tasks?: unknown[] };
       try {
-        parsedResponse = JSON.parse(geminiResponse);
+        parsedResponse = parseJsonFromGemini(geminiResponse) as typeof parsedResponse;
       } catch (parseError) {
         console.error('Failed to parse Gemini response:', geminiResponse);
         throw new Error('Failed to parse AI response. Please try again.');

@@ -1,20 +1,16 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { forwardRef, HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <motion.div
+    <div
       ref={ref}
       className={cn(
         "rounded-lg bg-card text-card-foreground border border-border shadow-subtle hover:shadow-subtle-hover hover:border-border/80 transition-smooth",
         className
       )}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
       {...props}
     />
   )

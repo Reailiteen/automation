@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
@@ -12,12 +11,12 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variants = {
   default:
-    "bg-primary text-primary-foreground shadow-subtle hover:bg-primary/90 hover:shadow-subtle-hover transition-smooth",
-  destructive: "bg-destructive text-destructive-foreground shadow-subtle hover:bg-destructive/90 hover:shadow-subtle-hover transition-smooth",
+    "bg-primary text-primary-foreground shadow-subtle hover:bg-primary/90 hover:shadow-subtle-hover transition-smooth active:scale-[0.98]",
+  destructive: "bg-destructive text-destructive-foreground shadow-subtle hover:bg-destructive/90 hover:shadow-subtle-hover transition-smooth active:scale-[0.98]",
   outline:
-    "border border-border bg-background hover:bg-accent hover:text-accent-foreground transition-smooth",
-  secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-smooth",
-  ghost: "hover:bg-accent hover:text-accent-foreground transition-smooth",
+    "border border-border bg-background hover:bg-accent hover:text-accent-foreground transition-smooth active:scale-[0.98]",
+  secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-smooth active:scale-[0.98]",
+  ghost: "hover:bg-accent hover:text-accent-foreground transition-smooth active:scale-[0.98]",
   link: "text-primary underline-offset-4 hover:underline",
 } as const;
 
@@ -29,10 +28,9 @@ const sizes = {
 } as const;
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", loading = false, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? motion.span : motion.button;
+  ({ className, variant = "default", size = "default", loading = false, ...props }, ref) => {
     return (
-      <Comp
+      <button
         className={cn(
           "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
           variants[variant],
@@ -40,7 +38,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           className
         )}
         ref={ref}
-        whileTap={{ scale: 0.98 }}
         disabled={loading}
         {...props}
       >
@@ -67,7 +64,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </svg>
         )}
         {props.children}
-      </Comp>
+      </button>
     );
   }
 );

@@ -94,7 +94,7 @@ export class SchedulerAgent implements BaseAgent<SchedulerInput, SchedulerOutput
       return {
         result: null,
         confidence: 0,
-        metadata: { error: error.message }
+        metadata: { error: error instanceof Error ? error.message : String(error) }
       };
     }
   }
