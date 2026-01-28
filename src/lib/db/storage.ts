@@ -2,8 +2,34 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { Task, Plan, User, Schedule, AgentOutput, Project } from '../models/task';
 
-// Base data directory
-const DATA_DIR = path.join(process.cwd(), 'data');
+// Detect if we're in a serverless environment (Netlify Functions, AWS Lambda, etc.)
+// In serverless, filesystem is read-only except for /tmp
+function detectServerless(): boolean {
+  const cwd = process.cwd();
+  return !!(
+    process.env.NETLIFY === 'true' || 
+    process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    process.env.VERCEL === '1' ||
+    process.env.LAMBDA_TASK_ROOT ||
+    cwd.includes('/var/task') ||
+    cwd === '/var/task' ||
+    cwd.startsWith('/tmp') ||
+    // Additional check: if cwd is a typical serverless path
+    (cwd.startsWith('/') && !cwd.includes('Desktop') && !cwd.includes('home') && !cwd.includes('Users'))
+  );
+}
+
+function getDataDir(): string {
+  const isServerless = detectServerless();
+  // Always use /tmp in serverless - it's the only writable location
+  if (isServerless) {
+    console.log('[STORAGE] Serverless environment detected, using /tmp for data storage');
+    return path.join('/tmp', 'automation-data');
+  }
+  return path.join(process.cwd(), 'data');
+}
+
+const DATA_DIR = getDataDir();
 const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
 const PLANS_FILE = path.join(DATA_DIR, 'plans.json');
 const PROJECTS_FILE = path.join(DATA_DIR, 'projects.json');
@@ -13,6 +39,7 @@ const AGENT_OUTPUTS_FILE = path.join(DATA_DIR, 'agent-outputs.json');
 
 // Initialize data directory and files
 async function ensureDataDir() {
+  const isServerless = detectServerless();
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
     
@@ -24,7 +51,14 @@ async function ensureDataDir() {
         await fs.writeFile(file, '[]');
       }
     }
-  } catch (error) {
+  } catch (error: any) {
+    // In serverless, if /tmp fails, log but don't throw - we'll handle gracefully
+    if (isServerless && (error.code === 'EROFS' || error.message?.includes('read-only'))) {
+      console.warn('Read-only filesystem detected in serverless environment.');
+      console.warn('Data will not persist. Please migrate to Supabase for production storage.');
+      // Return empty arrays for reads, and log writes (data won't persist)
+      return;
+    }
     console.error('Error ensuring data directory:', error);
     throw error;
   }
@@ -43,10 +77,21 @@ async function readFile<T>(filePath: string): Promise<T[]> {
 }
 
 async function writeFile<T>(filePath: string, data: T[]): Promise<void> {
+  const isServerless = detectServerless();
   await ensureDataDir();
   try {
     await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-  } catch (error) {
+  } catch (error: any) {
+    // Handle read-only filesystem in serverless
+    if (error.code === 'EROFS' || error.message?.includes('read-only')) {
+      const errorMsg = `[STORAGE] Cannot write to ${filePath}: Read-only filesystem. ` +
+        `This is expected in serverless environments. Data will not persist between invocations. ` +
+        `Please migrate to Supabase for persistent storage in production.`;
+      console.warn(errorMsg);
+      // Don't throw - allow the app to continue (data just won't persist)
+      // In serverless, /tmp is writable but cleared between invocations
+      return;
+    }
     console.error('Error writing file:', error);
     throw error;
   }

@@ -1,0 +1,15 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@automation/types": ["../../packages/types/src"],
+      "@automation/utils": ["../../packages/utils/src"],
+      "@automation/auth": ["../../packages/auth/src"],
+      "@automation/data": ["../../packages/data/src"],
+      "@automation/services": ["../../packages/services/src"],
+      "@automation/agents": ["../../packages/agents/src"]
+    }
+  }
+}
