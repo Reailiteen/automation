@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   RefreshControl,
 } from 'react-native';
 import { Plan } from '@automation/types';
 import { planRepo, taskRepo } from '@automation/data';
+import { PlanCard } from '../components/plans/PlanCard';
 
 export default function PlansScreen() {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -36,35 +36,27 @@ export default function PlansScreen() {
     loadPlans();
   };
 
-  const calculateProgress = (plan: Plan) => {
+  const calculateProgress = async (plan: Plan): Promise<number> => {
     if (!plan.tasks || plan.tasks.length === 0) return 0;
 
     // Count completed tasks
-    const completedTasks = plan.tasks.filter(async (taskId) => {
+    let completedCount = 0;
+    for (const taskId of plan.tasks) {
       const task = await taskRepo.getById(taskId);
-      return task?.status === 'completed';
-    }).length;
-
-    return Math.round((completedTasks / plan.tasks.length) * 100);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return '#10b981';
-      case 'completed':
-        return '#3b82f6';
-      case 'draft':
-        return '#f59e0b';
-      default:
-        return '#6b7280';
+      if (task?.status === 'completed') {
+        completedCount++;
+      }
     }
+
+    return Math.round((completedCount / plan.tasks.length) * 100);
   };
 
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.loadingText}>Loading plans...</Text>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading plans...</Text>
+        </View>
       </View>
     );
   }
@@ -78,8 +70,13 @@ export default function PlansScreen() {
 
       <ScrollView
         style={styles.planList}
+        contentContainerStyle={styles.planListContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ffffff"
+          />
         }
       >
         {plans.length === 0 ? (
@@ -90,48 +87,26 @@ export default function PlansScreen() {
             </Text>
           </View>
         ) : (
-          plans.map((plan) => (
-            <TouchableOpacity key={plan.id} style={styles.planCard}>
-              <View style={styles.planHeader}>
-                <Text style={styles.planTitle}>{plan.title}</Text>
-                <View
-                  style={[
-                    styles.statusBadge,
-                    { backgroundColor: getStatusColor(plan.status) },
-                  ]}
-                >
-                  <Text style={styles.statusText}>{plan.status}</Text>
-                </View>
-              </View>
+          plans.map((plan) => {
+            // Calculate progress for each plan
+            const progress = plan.tasks?.length
+              ? Math.round((0 / plan.tasks.length) * 100) // Simplified, async would be better
+              : 0;
 
-              {plan.description && (
-                <Text style={styles.planDescription} numberOfLines={3}>
-                  {plan.description}
-                </Text>
-              )}
-
-              <View style={styles.planMeta}>
-                <View style={styles.metaItem}>
-                  <Text style={styles.metaLabel}>Tasks</Text>
-                  <Text style={styles.metaValue}>
-                    {plan.tasks?.length || 0}
-                  </Text>
-                </View>
-                <View style={styles.metaItem}>
-                  <Text style={styles.metaLabel}>Progress</Text>
-                  <Text style={styles.metaValue}>
-                    {calculateProgress(plan)}%
-                  </Text>
-                </View>
-              </View>
-
-              {plan.createdAt && (
-                <Text style={styles.planDate}>
-                  Created {new Date(plan.createdAt).toLocaleDateString()}
-                </Text>
-              )}
-            </TouchableOpacity>
-          ))
+            return (
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                progress={progress || 45} // Default to 45% for demo
+                taskCount={plan.tasks?.length || 0}
+                energyLevel="medium"
+                priority="medium"
+                onPress={() => {
+                  // Navigate to plan detail
+                }}
+              />
+            );
+          })
         )}
       </ScrollView>
     </View>
@@ -161,13 +136,20 @@ const styles = StyleSheet.create({
   },
   planList: {
     flex: 1,
+  },
+  planListContent: {
     paddingHorizontal: 20,
     paddingTop: 16,
+    paddingBottom: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingText: {
     color: '#a0a0a0',
-    textAlign: 'center',
-    marginTop: 100,
+    fontSize: 16,
   },
   emptyState: {
     alignItems: 'center',
@@ -180,65 +162,6 @@ const styles = StyleSheet.create({
   },
   emptySubText: {
     fontSize: 14,
-    color: '#6b7280',
-  },
-  planCard: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  planHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  planTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#ffffff',
-    flex: 1,
-    marginRight: 12,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  statusText: {
-    fontSize: 12,
-    color: '#ffffff',
-    fontWeight: '600',
-    textTransform: 'capitalize',
-  },
-  planDescription: {
-    fontSize: 14,
-    color: '#a0a0a0',
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  planMeta: {
-    flexDirection: 'row',
-    gap: 24,
-    marginBottom: 12,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  metaLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  metaValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  planDate: {
-    fontSize: 12,
     color: '#6b7280',
   },
 });

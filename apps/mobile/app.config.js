@@ -39,6 +39,9 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.automation.mobile',
+      infoPlist: {
+        NSMicrophoneUsageDescription: 'This app needs access to your microphone for voice input and task creation.',
+      },
     },
     android: {
       adaptiveIcon: {
@@ -48,7 +51,16 @@ module.exports = {
       package: 'com.automation.mobile',
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
+      permissions: ['RECORD_AUDIO'],
     },
+    plugins: [
+      [
+        'expo-av',
+        {
+          microphonePermission: 'Allow $(PRODUCT_NAME) to access your microphone for voice input.',
+        },
+      ],
+    ],
     web: {
       favicon: './assets/favicon.png',
     },

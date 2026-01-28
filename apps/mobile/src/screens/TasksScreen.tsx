@@ -4,16 +4,22 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
 import { Task } from '@automation/types';
 import { taskRepo } from '@automation/data';
+import { EnhancedTaskCard } from '../components/tasks/EnhancedTaskCard';
+import { TaskCreationForm } from '../components/tasks/TaskCreationForm';
+import TaskDetailScreen from './TaskDetailScreen';
+import { Button } from '../components/ui/Button';
 
 export default function TasksScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -40,36 +46,35 @@ export default function TasksScreen() {
     loadTasks();
   };
 
-  const handleTaskPress = async (task: Task) => {
-    // Toggle task status
-    const newStatus = task.status === 'pending' ? 'in-progress' : 'pending';
+  const handleTaskPress = (task: Task) => {
+    setSelectedTaskId(task.id);
+  };
+
+  const handleStartTask = async (task: Task) => {
     try {
-      await taskRepo.update(task.id, { status: newStatus });
+      await taskRepo.update(task.id, { status: 'in-progress' });
       await loadTasks();
     } catch (error) {
       console.error('Error updating task:', error);
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent':
-        return '#ef4444';
-      case 'high':
-        return '#f97316';
-      case 'medium':
-        return '#3b82f6';
-      case 'low':
-        return '#6b7280';
-      default:
-        return '#6b7280';
-    }
-  };
+  if (selectedTaskId) {
+    return (
+      <TaskDetailScreen
+        taskId={selectedTaskId}
+        onClose={() => setSelectedTaskId(null)}
+        onTaskUpdated={loadTasks}
+      />
+    );
+  }
 
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.loadingText}>Loading tasks...</Text>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading tasks...</Text>
+        </View>
       </View>
     );
   }
@@ -77,14 +82,24 @@ export default function TasksScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Tasks</Text>
-        <Text style={styles.subHeaderText}>{tasks.length} active</Text>
+        <View>
+          <Text style={styles.headerText}>Tasks</Text>
+          <Text style={styles.subHeaderText}>{tasks.length} active</Text>
+        </View>
+        <Button onPress={() => setShowCreateForm(true)} size="sm">
+          + New
+        </Button>
       </View>
 
       <ScrollView
         style={styles.taskList}
+        contentContainerStyle={styles.taskListContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ffffff"
+          />
         }
       >
         {tasks.length === 0 ? (
@@ -93,49 +108,30 @@ export default function TasksScreen() {
             <Text style={styles.emptySubText}>
               Use voice or chat to create tasks
             </Text>
+            <Button
+              onPress={() => setShowCreateForm(true)}
+              style={styles.createButton}
+            >
+              Create Your First Task
+            </Button>
           </View>
         ) : (
           tasks.map((task) => (
-            <TouchableOpacity
+            <EnhancedTaskCard
               key={task.id}
-              style={styles.taskCard}
+              task={task}
               onPress={() => handleTaskPress(task)}
-            >
-              <View style={styles.taskHeader}>
-                <View
-                  style={[
-                    styles.priorityIndicator,
-                    { backgroundColor: getPriorityColor(task.priority) },
-                  ]}
-                />
-                <View style={styles.taskContent}>
-                  <Text style={styles.taskTitle}>{task.title}</Text>
-                  {task.description && (
-                    <Text style={styles.taskDescription} numberOfLines={2}>
-                      {task.description}
-                    </Text>
-                  )}
-                  <View style={styles.taskMeta}>
-                    <View style={styles.badge}>
-                      <Text style={styles.badgeText}>{task.kind}</Text>
-                    </View>
-                    <View style={styles.badge}>
-                      <Text style={styles.badgeText}>{task.status}</Text>
-                    </View>
-                    {task.estimatedTime && (
-                      <View style={styles.badge}>
-                        <Text style={styles.badgeText}>
-                          {task.estimatedTime}min
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
+              onStartTask={() => handleStartTask(task)}
+            />
           ))
         )}
       </ScrollView>
+
+      <TaskCreationForm
+        visible={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        onTaskCreated={loadTasks}
+      />
     </View>
   );
 }
@@ -146,6 +142,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#0a0a0a',
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingTop: 60,
     paddingBottom: 20,
     paddingHorizontal: 20,
@@ -163,17 +162,25 @@ const styles = StyleSheet.create({
   },
   taskList: {
     flex: 1,
+  },
+  taskListContent: {
     paddingHorizontal: 20,
     paddingTop: 16,
+    paddingBottom: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingText: {
     color: '#a0a0a0',
-    textAlign: 'center',
-    marginTop: 100,
+    fontSize: 16,
   },
   emptyState: {
     alignItems: 'center',
     marginTop: 80,
+    paddingHorizontal: 20,
   },
   emptyText: {
     fontSize: 18,
@@ -183,49 +190,10 @@ const styles = StyleSheet.create({
   emptySubText: {
     fontSize: 14,
     color: '#6b7280',
+    marginBottom: 24,
   },
-  taskCard: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
-  taskHeader: {
-    flexDirection: 'row',
-  },
-  priorityIndicator: {
-    width: 4,
-  },
-  taskContent: {
-    flex: 1,
-    padding: 16,
-  },
-  taskTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 8,
-  },
-  taskDescription: {
-    fontSize: 14,
-    color: '#a0a0a0',
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  taskMeta: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  badge: {
-    backgroundColor: '#2a2a2a',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  badgeText: {
-    fontSize: 12,
-    color: '#a0a0a0',
-    textTransform: 'capitalize',
+  createButton: {
+    width: '100%',
+    maxWidth: 300,
   },
 });
