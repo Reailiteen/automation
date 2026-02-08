@@ -1,11 +1,12 @@
 import Groq from 'groq-sdk';
+import { getEnv } from './env';
 
 export class GroqService {
   private client: Groq;
 
   constructor() {
     this.client = new Groq({
-      apiKey: process.env.GROQ_API_KEY || '',
+      apiKey: getEnv('GROQ_API_KEY') || '',
     });
   }
 

@@ -4,10 +4,10 @@ import {
   BaseAgentOutput,
   SchedulerInput,
   SchedulerOutput,
-  TimeBlock
 } from './base-agent';
+import { TimeBlock } from '@automation/types';
 import { scheduleRepo, agentOutputRepo } from '@automation/data';
-import { GeminiService } from '@automation/services';
+import { GeminiService, validationService } from '@automation/services';
 
 export class SchedulerAgent implements BaseAgent<SchedulerInput, SchedulerOutput> {
   type = 'scheduler';
@@ -35,28 +35,61 @@ export class SchedulerAgent implements BaseAgent<SchedulerInput, SchedulerOutput
           geminiSchedule.tasks,
           tasks
         );
+
+        // Pre-execution validation before persisting anything
+        const validation = validationService.validateSchedule({
+          tasks,
+          scheduled: scheduledTasks,
+          events: existingEvents || [],
+          user,
+          date,
+        });
+
+        // Philosophy 2.1 & 5: Always summarize and require confirmation if issues or not explicitly confirmed
+        const requiresConfirmation = validation.requiresConfirmation || !input.context?.confirmed;
+
+        if (!validation.ok || (requiresConfirmation && !input.context?.confirmed)) {
+          reasoning.push(validation.ok ? 'Schedule requires user review' : 'Validation blocked schedule creation');
+          return {
+            result: { 
+              schedule: null, 
+              reasoning, 
+              validation, 
+              requiresConfirmation: true,
+              draftScheduledTasks: scheduledTasks,
+              summary: `Proposed schedule for ${date.toLocaleDateString()} with ${scheduledTasks.length} tasks. ${validation.issues.length} points for review.`
+            } as any,
+            confidence: validation.ok ? 0.6 : 0.25,
+            metadata: { validation, scheduleId: null, taskCount: scheduledTasks.length }
+          };
+        }
         
         const schedule = await scheduleRepo.create({
-          date: date,
+          date,
           tasks: scheduledTasks,
           notes: `AI scheduled on ${new Date().toLocaleDateString()}`,
           energyProfile: user.preferences.energyProfile,
           constraints: {
             maxTasks: constraints?.maxDeepWorkSessions || 3,
             maxDeepWorkSessions: constraints?.maxDeepWorkSessions || 2
-          }
+          },
+          validation,
+          userId: user.id,
         });
 
         reasoning.push(`AI scheduled ${scheduledTasks.length} tasks for ${date.toLocaleDateString()}`);
         reasoning.push(`Total estimated work time: ${this.calculateTotalTime(scheduledTasks)} minutes`);
+        if (validation.requiresConfirmation) {
+          reasoning.push('User confirmation recommended before committing schedule');
+        }
         
         // Record agent output for reflection
         await this.recordAgentOutput(input, { schedule, reasoning });
 
         return {
-          result: { schedule, reasoning } as SchedulerOutput,
+          result: { schedule, reasoning, validation } as SchedulerOutput,
           confidence: 0.9, // Higher confidence with AI assistance
-          metadata: { scheduleId: schedule.id, taskCount: scheduledTasks.length }
+          metadata: { scheduleId: schedule.id, taskCount: scheduledTasks.length, validation }
         };
       } catch (geminiError) {
         console.warn('Gemini scheduling failed, using fallback:', geminiError);
@@ -68,25 +101,47 @@ export class SchedulerAgent implements BaseAgent<SchedulerInput, SchedulerOutput
           existingEvents || [],
           constraints
         );
+
+        const validation = validationService.validateSchedule({
+          tasks,
+          scheduled: scheduledTasks,
+          events: existingEvents || [],
+          user,
+          date,
+        });
+
+        if (!validation.ok) {
+          reasoning.push('Validation blocked schedule creation');
+          return {
+            result: { schedule: null, reasoning, validation } as SchedulerOutput,
+            confidence: 0.25,
+            metadata: { validation, scheduleId: null, taskCount: scheduledTasks.length }
+          };
+        }
         
         const schedule = await scheduleRepo.create({
-          date: date,
+          date,
           tasks: scheduledTasks,
           notes: `Fallback scheduled on ${new Date().toLocaleDateString()}`,
           energyProfile: user.preferences.energyProfile,
           constraints: {
             maxTasks: constraints?.maxDeepWorkSessions || 3,
             maxDeepWorkSessions: constraints?.maxDeepWorkSessions || 2
-          }
+          },
+          validation,
+          userId: user.id,
         });
 
         reasoning.push(`Fallback scheduled ${scheduledTasks.length} tasks for ${date.toLocaleDateString()}`);
         reasoning.push(`Total estimated work time: ${this.calculateTotalTime(scheduledTasks)} minutes`);
+        if (validation.requiresConfirmation) {
+          reasoning.push('User confirmation recommended before committing schedule');
+        }
 
         return {
           result: { schedule, reasoning } as SchedulerOutput,
           confidence: 0.6, // Lower confidence with fallback
-          metadata: { scheduleId: schedule.id, taskCount: scheduledTasks.length }
+          metadata: { scheduleId: schedule.id, taskCount: scheduledTasks.length, validation }
         };
       }
     } catch (error) {

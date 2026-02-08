@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [tasks, projects] = await Promise.all([
-      taskRepo.getAll(),
+      taskRepo.getAll({ userId: user.id }),
       projectRepo.getAll(),
     ]);
 

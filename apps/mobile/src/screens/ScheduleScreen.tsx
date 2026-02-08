@@ -1,79 +1,100 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
+import { differenceInMinutes } from 'date-fns';
 import { EnergyGauge } from '../components/ui/EnergyGauge';
 import { ScheduleTimeBlock } from '../components/ui/ScheduleTimeBlock';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
+import { Schedule, ScheduledTask, Task, ValidationIssue } from '@automation/types';
+
+type BlockDetail = {
+  block: ScheduledTask;
+  task?: Task;
+};
 
 export default function ScheduleScreen() {
+  const [schedule, setSchedule] = useState<Schedule | null>(null);
+  const [blocks, setBlocks] = useState<BlockDetail[]>([]);
+  const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
   const [energyLevel, setEnergyLevel] = useState<'low' | 'medium' | 'high'>('high');
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock schedule data
-  const schedule = [
-    {
-      startTime: new Date(2024, 0, 1, 9, 0),
-      endTime: new Date(2024, 0, 1, 11, 0),
-      title: 'Deep Work Session',
-      duration: 2,
-      priority: 'high' as const,
-      focusLevel: 'intense' as const,
-      type: 'work' as const,
-    },
-    {
-      startTime: new Date(2024, 0, 1, 11, 0),
-      endTime: new Date(2024, 0, 1, 12, 0),
-      title: 'Email & Messages',
-      duration: 1,
-      priority: 'medium' as const,
-      focusLevel: 'moderate' as const,
-      type: 'work' as const,
-    },
-    {
-      startTime: new Date(2024, 0, 1, 12, 0),
-      endTime: new Date(2024, 0, 1, 13, 0),
-      title: 'Lunch Break',
-      duration: 1,
-      type: 'break' as const,
-    },
-    {
-      startTime: new Date(2024, 0, 1, 13, 0),
-      endTime: new Date(2024, 0, 1, 15, 0),
-      title: 'Execution Task',
-      duration: 2,
-      priority: 'urgent' as const,
-      focusLevel: 'high' as const,
-      type: 'work' as const,
-    },
-    {
-      startTime: new Date(2024, 0, 1, 15, 0),
-      endTime: new Date(2024, 0, 1, 16, 0),
-      title: 'Reflection',
-      duration: 1,
-      priority: 'low' as const,
-      focusLevel: 'mindful' as const,
-      type: 'work' as const,
-    },
-    {
-      startTime: new Date(2024, 0, 1, 17, 0),
-      endTime: new Date(2024, 0, 1, 18, 0),
-      title: 'Free Time',
-      duration: 1,
-      type: 'free' as const,
-    },
-  ];
+  const todayKey = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  const buildBlocks = (scheduleData: Schedule, tasks: Task[]) => {
+    const taskMap = tasks.reduce<Record<string, Task>>((acc, task) => {
+      acc[task.id] = task;
+      return acc;
+    }, {});
+
+    return (scheduleData.tasks ?? []).map((block) => ({
+      block,
+      task: taskMap[block.taskId],
+    }));
+  };
+
+  const loadSchedule = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [scheduleRes, tasksRes] = await Promise.all([
+        fetch(`/api/schedules?date=${todayKey}`),
+        fetch('/api/tasks'),
+      ]);
+
+      if (!scheduleRes.ok) {
+        const message =
+          scheduleRes.status === 401
+            ? 'Sign in to load your schedule.'
+            : 'Unable to load schedule right now.';
+        throw new Error(message);
+      }
+
+      const [scheduleData, tasksData] = await Promise.all([
+        scheduleRes.json(),
+        tasksRes.ok ? tasksRes.json() : [],
+      ]);
+
+      setSchedule(scheduleData);
+      setValidationIssues(scheduleData.validation?.issues ?? []);
+      setBlocks(buildBlocks(scheduleData, tasksData));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load schedule');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [todayKey]);
+
+  useEffect(() => {
+    loadSchedule();
+  }, [loadSchedule]);
+
+  useEffect(() => {
+    if (!validationIssues.length) {
+      setEnergyLevel('high');
+      return;
+    }
+    if (validationIssues.some((issue) => issue.severity === 'error')) {
+      setEnergyLevel('low');
+    } else if (validationIssues.some((issue) => issue.severity === 'warn')) {
+      setEnergyLevel('medium');
+    } else {
+      setEnergyLevel('high');
+    }
+  }, [validationIssues]);
 
   const onRefresh = () => {
     setRefreshing(true);
-    // Simulate refresh
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    loadSchedule();
   };
 
   return (
@@ -85,9 +106,38 @@ export default function ScheduleScreen() {
         </View>
         <View>
           <Text style={styles.headerText}>Today's Schedule</Text>
-          <Text style={styles.subHeaderText}>{schedule.length} time blocks</Text>
+          <Text style={styles.subHeaderText}>
+            {loading
+              ? 'Loading…'
+              : `${blocks.length} time block${blocks.length === 1 ? '' : 's'}`}
+          </Text>
         </View>
       </View>
+
+      {error && (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+
+      {validationIssues.length > 0 && (
+        <View style={styles.validationBanner}>
+          {validationIssues.map((issue) => (
+            <View
+              key={issue.code}
+              style={[
+                styles.validationRow,
+                issue.severity === 'error'
+                  ? styles.validationError
+                  : styles.validationWarn,
+              ]}
+            >
+              <Text style={styles.validationLabel}>{issue.severity.toUpperCase()}</Text>
+              <Text style={styles.validationMessage}>{issue.message}</Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       <ScrollView
         style={styles.content}
@@ -133,22 +183,56 @@ export default function ScheduleScreen() {
           </CardContent>
         </Card>
 
-        {/* Schedule Blocks */}
         <View style={styles.scheduleSection}>
           <Text style={styles.sectionTitle}>Time Blocks</Text>
-          {schedule.map((block, index) => (
-            <View key={index} style={styles.scheduleBlock}>
-              <ScheduleTimeBlock
-                startTime={block.startTime}
-                endTime={block.endTime}
-                title={block.title}
-                duration={block.duration}
-                priority={block.priority}
-                focusLevel={block.focusLevel}
-                type={block.type}
-              />
-            </View>
-          ))}
+          {loading && (
+            <ActivityIndicator size="small" color="#9fa3af" style={styles.loader} />
+          )}
+          {!loading && blocks.length === 0 && (
+            <Text style={styles.emptyText}>No scheduled blocks for today yet.</Text>
+          )}
+          {blocks.map((detail, index) => {
+            const { block, task } = detail;
+            const startTime = new Date(block.scheduledStart);
+            const endTime = new Date(block.scheduledEnd);
+            const durationMinutes = differenceInMinutes(endTime, startTime);
+            const durationHours = Math.max(
+              Math.round((durationMinutes / 60) * 10) / 10,
+              0.25
+            );
+            const priority = (task?.priority ?? 'medium') as
+              | 'low'
+              | 'medium'
+              | 'high'
+              | 'urgent';
+            const focusLevel = (task?.focusLevel ?? 'moderate') as
+              | 'moderate'
+              | 'intense'
+              | 'mindful'
+              | 'high'
+              | 'shallow';
+            const type =
+              block.context?.toLowerCase().includes('break') ||
+              block.context?.toLowerCase().includes('pause')
+                ? 'break'
+                : block.context?.toLowerCase().includes('free')
+                ? 'free'
+                : 'work';
+
+            return (
+              <View key={`${block.taskId}-${startTime.toISOString()}`} style={styles.scheduleBlock}>
+                <ScheduleTimeBlock
+                  startTime={startTime}
+                  endTime={endTime}
+                  title={task?.title ?? 'Scheduled Task'}
+                  duration={durationHours}
+                  priority={priority}
+                  focusLevel={focusLevel}
+                  type={type}
+                />
+              </View>
+            );
+          })}
         </View>
       </ScrollView>
     </View>
@@ -252,5 +336,52 @@ const styles = StyleSheet.create({
   },
   scheduleBlock: {
     marginBottom: 12,
+  },
+  errorBanner: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#4b0f0f',
+  },
+  errorText: {
+    color: '#f87171',
+    fontSize: 13,
+  },
+  validationBanner: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  validationRow: {
+    borderLeftWidth: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  validationError: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderColor: '#ef4444',
+  },
+  validationWarn: {
+    backgroundColor: 'rgba(250, 204, 21, 0.1)',
+    borderColor: '#facc15',
+  },
+  validationLabel: {
+    color: '#e5e7eb',
+    fontSize: 12,
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  validationMessage: {
+    color: '#cbd5f5',
+    fontSize: 13,
+  },
+  loader: {
+    marginBottom: 12,
+  },
+  emptyText: {
+    color: '#9ca3af',
+    fontSize: 13,
+    marginBottom: 8,
   },
 });

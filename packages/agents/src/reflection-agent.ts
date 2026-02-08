@@ -26,10 +26,16 @@ export class ReflectionAgent implements BaseAgent<ReflectionInput, ReflectionOut
       
       try {
         const geminiResponse = await geminiService.generateContent(prompt);
-        const reflectionOutput = JSON.parse(geminiResponse);
+        let reflectionOutput;
+        try {
+          reflectionOutput = JSON.parse(geminiResponse);
+        } catch (e) {
+          const { parseJsonFromGemini } = await import('@automation/utils');
+          reflectionOutput = parseJsonFromGemini(geminiResponse) as any;
+        }
         
         reasoning.push(`AI analyzed ${completionHistory.length} task completions`);
-        reasoning.push(`Identified ${reflectionOutput.insights.patterns.length} behavioral patterns`);
+        reasoning.push(`Identified ${reflectionOutput.insights?.patterns?.length || 0} behavioral patterns`);
         
         // Record agent output for future analysis
         await this.recordAgentOutput(input, reflectionOutput);
@@ -37,12 +43,13 @@ export class ReflectionAgent implements BaseAgent<ReflectionInput, ReflectionOut
         return {
           result: {
             insights: reflectionOutput.insights,
-            recommendations: reflectionOutput.recommendations
-          } as ReflectionOutput,
-          confidence: 0.9, // Higher confidence with AI assistance
+            recommendations: reflectionOutput.recommendations,
+            summary: `Reflection complete: Identified ${reflectionOutput.insights?.patterns?.length || 0} patterns and ${reflectionOutput.recommendations?.length || 0} advisory recommendations.`
+          } as any,
+          confidence: 0.9,
           metadata: {
-            patternsFound: reflectionOutput.insights.patterns.length,
-            adjustmentsIdentified: reflectionOutput.insights.adjustments.length
+            patternsFound: reflectionOutput.insights?.patterns?.length || 0,
+            adjustmentsIdentified: reflectionOutput.insights?.adjustments?.length || 0
           }
         };
       } catch (geminiError) {

@@ -1,6 +1,7 @@
 // Gemini AI service for agent operations
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getEnv } from './env';
+import { parseJsonFromGemini } from '@automation/utils';
 
 // This will be used for all Gemini API calls
 export class GeminiService {
@@ -162,9 +163,14 @@ Use this structure:
   }
 
   private generatePrioritizationPrompt(context: any): string {
-    return `You are a task prioritization AI assistant. Your job is to help users prioritize their tasks based on multiple factors.
+    return `You are a task prioritization AI assistant. Your goal is to translate user priorities into a structured ranking while respecting temporal feasibility and human limitations.
 
-Current context:
+Philosophy:
+- AI as a translator, not an authority.
+- Trust is preserved by predictability, not cleverness.
+- Explain your reasoning.
+
+Current Context:
 ${context.currentContext ? `
 - Available time: ${context.currentContext.availableTime} minutes
 - Current energy level: ${context.currentContext.currentEnergy}
@@ -182,7 +188,7 @@ Please analyze these tasks and rank them by priority. Consider:
 Tasks to prioritize:
 ${JSON.stringify(context.tasks, null, 2)}
 
-Return your response as JSON with an array of prioritized tasks, each with a priority score (0-1):
+Return your response as JSON with an array of prioritized tasks and a brief summary of your reasoning:
 {
   "tasks": [
     {
@@ -191,12 +197,19 @@ Return your response as JSON with an array of prioritized tasks, each with a pri
       "priority": "low|medium|high|urgent",
       "reasoning": "brief explanation of priority score"
     }
-  ]
+  ],
+  "reasoning": ["point 1", "point 2"]
 }`;
   }
 
   private generateSchedulerPrompt(context: any): string {
-    return `You are a task scheduling AI assistant. Your job is to help users schedule their tasks optimally.
+    return `You are a task scheduling AI assistant. Your goal is to translate user goals into a realistic, temporally feasible schedule.
+
+Philosophy:
+- Time is the governing dimension of the system.
+- Prefer fewer commitments and realistic schedules.
+- Always explain what you are about to do.
+- AI is a translator, not an authority.
 
 Date to schedule: ${context.date.toLocaleDateString()}
 Energy profile: ${JSON.stringify(context.energyProfile)}
@@ -213,7 +226,7 @@ Please create a Schedule for this date. Consider:
 4. Task focus levels and energy requirements
 5. Conflicts with existing events
 
-Return your response as JSON with a schedule:
+Return your response as JSON with a schedule and reasoning:
 {
   "schedule": {
     "date": "${context.date.toISOString()}",
@@ -226,13 +239,18 @@ Return your response as JSON with a schedule:
         "status": "scheduled"
       }
     ],
-    "reasoning": "brief explanation of scheduling decisions"
+    "reasoning": ["point 1", "point 2"]
   }
 }`;
   }
 
   private generateExecutionPrompt(context: any): string {
-    return `You are a task execution AI assistant. Your job is to help users work on their current task effectively.
+    return `You are a task execution AI assistant. Your goal is to help users work on their current task by translating intent into concrete steps and identifying potential blockers.
+
+Philosophy:
+- AI as a translator, not an authority.
+- Trust is preserved by predictability and clarity.
+- Reduce cognitive load by providing focused instructions.
 
 Current task: ${JSON.stringify(context.currentTask, null, 2)}
 ${context.progress ? `Current progress: ${JSON.stringify(context.progress)}` : ''}
@@ -262,7 +280,12 @@ Return your response as JSON:
   }
 
   private generateReflectionPrompt(context: any): string {
-    return `You are a task reflection AI assistant. Your job is to help users learn from their task completion patterns.
+    return `You are a task reflection AI assistant. Your goal is to help users learn from their task completion patterns by providing non-authoritative advisory warnings and insights.
+
+Philosophy:
+- Behavioral insights should be advisory, not authoritative.
+- Labels and warnings must be clear and skippable.
+- Focus on reducing cognitive load and increasing clarity.
 
 Tasks being reflected on: ${JSON.stringify(context.tasks, null, 2)}
 ${context.completionHistory.length > 0 ? `Task completion history: ${JSON.stringify(context.completionHistory, null, 2)}` : ''}
@@ -289,5 +312,47 @@ Return your response as JSON:
   },
   "recommendations": ["recommendation1", "recommendation2"]
 }`;
+  }
+
+  async processVoiceTranscript(transcript: string, now: Date, timeZone: string) {
+    const prompt = `You are a voice-to-intent translator for a productivity system.
+Your goal is to split a messy voice transcript into logical chunks and classify each chunk.
+
+Philosophy:
+- AI as a translator, not an authority.
+- Be conservative with intent detection.
+- Time is a first-class constraint. Normalize all time expressions relative to "now".
+
+Current "Now": ${now.toISOString()}
+Current Timezone: ${timeZone}
+
+Transcript: "${transcript}"
+
+Split the transcript into logical chunks. For each chunk, determine:
+1. "intent": 'task' | 'reminder' | 'habit' | 'note' | 'unknown'
+2. "normalized": A cleaner version of the raw text.
+3. "timeExpressions": Array of normalized ISO-8601 timestamps found in the chunk, or relative time offsets.
+4. "dueAt": A single ISO-8601 timestamp representing the primary deadline or reminder time, if any.
+
+Return your response as JSON with an array of chunks:
+{
+  "chunks": [
+    {
+      "raw": "original segment",
+      "normalized": "clean version",
+      "intent": "task|reminder|habit|note|unknown",
+      "timeExpressions": ["ISO_timestamp"],
+      "dueAt": "ISO_timestamp or null"
+    }
+  ]
+}`;
+
+    const response = await this.generateContent(prompt, 'gemini-1.5-flash');
+    try {
+      return parseJsonFromGemini(response);
+    } catch (error) {
+      console.error('Failed to parse Gemini response for voice transcript:', error);
+      return { chunks: [] };
+    }
   }
 }

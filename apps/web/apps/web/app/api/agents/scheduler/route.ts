@@ -1,37 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SchedulerAgent } from '@automation/agents';
 import { taskRepo, userRepo } from '@automation/data';
+import { createServerClient as createClient } from '@automation/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { date, taskIds, existingEvents, constraints } = await request.json();
-    
-    // Get user from session or headers for now
-    const userId = request.headers.get('x-user-id') || 'default-user';
-    const user = await userRepo.getById(userId);
-    
+    const { date, taskIds = [], existingEvents = [], constraints, confirm } =
+      await request.json();
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const profile = await userRepo.getById(user.id);
+    if (!profile) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'User profile not found' },
         { status: 404 }
       );
     }
 
-    // Get tasks based on provided IDs
     const tasks = await Promise.all(
-      (taskIds as string[]).map((id: string) => taskRepo.getById(id))
+      (taskIds as string[]).map(id => taskRepo.getById(id))
     );
-    
-    // Filter out any null tasks
-    const validTasks = tasks.filter(task => task !== null);
+    const validTasks = tasks.filter((task): task is NonNullable<typeof task> => Boolean(task));
 
     const schedulerAgent = new SchedulerAgent();
     const result = await schedulerAgent.process({
-      user,
+      user: profile,
       tasks: validTasks,
-      date: new Date(date),
+      date: date ? new Date(date) : new Date(),
       existingEvents,
-      constraints
+      constraints,
+      context: { confirmed: Boolean(confirm) },
     });
 
     return NextResponse.json(result);
@@ -46,32 +51,37 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from session or headers for now
-    const userId = request.headers.get('x-user-id') || 'default-user';
-    const user = await userRepo.getById(userId);
-    
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const profile = await userRepo.getById(user.id);
+    if (!profile) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'User profile not found' },
         { status: 404 }
       );
     }
 
-    // Get today's date or use date from query
+    // Get today's date or use query param
     const url = new URL(request.url);
     const dateParam = url.searchParams.get('date');
     const date = dateParam ? new Date(dateParam) : new Date();
 
-    // Get all tasks for this user (for now, we'll just get all tasks)
-    const tasks = await taskRepo.getAll();
+    const tasks = await taskRepo.getAll({ userId: profile.id });
 
     const schedulerAgent = new SchedulerAgent();
     const result = await schedulerAgent.process({
-      user,
+      user: profile,
       tasks,
       date,
       existingEvents: [],
-      constraints: undefined
+      constraints: undefined,
     });
 
     return NextResponse.json(result);

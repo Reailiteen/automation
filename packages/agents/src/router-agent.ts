@@ -51,12 +51,19 @@ export class RouterAgent implements BaseAgent<RouterInput, RouterOutput> {
   }
 
   private async classifyInput(input: string): Promise<RouterOutput> {
-    const prompt = `Analyze the following user input and classify it into one of these categories:
+    const prompt = `You are a intent classification AI for a productivity system. Your goal is to translate user input into the correct system operation.
+
+Philosophy:
+- AI as a translator, not an authority.
+- Identify intent accurately to preserve trust.
+- Be conservative if ambiguous and classify as "question" to trigger clarification.
+
+Analyze the following user input and classify it into one of these categories:
 1. "task" - A single actionable item (e.g., "Buy groceries", "Call John", "Finish report")
 2. "plan" - A multi-step goal or project (e.g., "Build a website", "Plan a vacation", "Learn Spanish")
 3. "note" - Information to remember (e.g., "John's phone number is 555-1234", "Meeting moved to Friday")
 4. "reminder" - A time-based alert (e.g., "Remind me to call mom tomorrow", "Set reminder for dentist appointment")
-5. "question" - A question that needs an answer (e.g., "What tasks do I have today?", "How do I prioritize?")
+5. "question" - A question or ambiguous command that needs clarification (e.g., "What tasks do I have today?", "How do I prioritize?")
 
 User Input: "${input}"
 
@@ -76,7 +83,13 @@ Return your response as JSON:
 
     try {
       const response = await this.geminiService.generateContent(prompt);
-      const result = JSON.parse(response);
+      let result;
+      try {
+        result = JSON.parse(response);
+      } catch (e) {
+        const { parseJsonFromGemini } = await import('@automation/utils');
+        result = parseJsonFromGemini(response) as any;
+      }
       
       return {
         type: result.type || 'question',

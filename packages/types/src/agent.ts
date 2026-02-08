@@ -1,4 +1,5 @@
-import { Task, Plan, User, Schedule } from './task';
+import { Task, Plan, User, Schedule, TimeBlock } from './task';
+import { ValidationResult } from './validation';
 
 export interface BaseAgentInput {
   user: User;
@@ -24,6 +25,8 @@ export interface PlannerInput extends BaseAgentInput {
     start: Date;
     end: Date;
   };
+  confirm?: boolean;
+  forceCreate?: boolean;
 }
 
 export interface PriorityFactors {
@@ -55,15 +58,6 @@ export interface SchedulerInput extends BaseAgentInput {
   };
 }
 
-export interface TimeBlock {
-  start: Date;
-  end: Date;
-  type: 'work' | 'break' | 'meeting' | 'event';
-  taskId?: string;
-  title?: string;
-  location?: string;
-}
-
 export interface ExecutionInput extends BaseAgentInput {
   currentTask: Task;
   progress?: {
@@ -91,9 +85,13 @@ export interface ReflectionInput extends BaseAgentInput {
 
 // Common agent output types
 export interface PlannerOutput {
-  plan: Plan;
+  plan: Plan | null;
   tasks: Task[];
   reasoning: string[];
+  requiresConfirmation?: boolean;
+  validation?: ValidationResult;
+  duplicateItems?: any;
+  draftTasks?: Partial<Task>[];
 }
 
 export interface PrioritizedTask extends Task {
@@ -107,8 +105,9 @@ export interface PrioritizationOutput {
 }
 
 export interface SchedulerOutput {
-  schedule: Schedule;
+  schedule: Schedule | null;
   reasoning: string[];
+  validation?: ValidationResult;
 }
 
 export interface ExecutionOutput {

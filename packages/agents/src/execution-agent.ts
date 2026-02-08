@@ -6,7 +6,7 @@ import {
   ExecutionOutput
 } from './base-agent';
 import { taskRepo, agentOutputRepo } from '@automation/data';
-import { GeminiService } from '@automation/services';
+import { GeminiService, validationService } from '@automation/services';
 
 export class ExecutionAgent implements BaseAgent<ExecutionInput, ExecutionOutput> {
   type = 'execution';
@@ -16,6 +16,20 @@ export class ExecutionAgent implements BaseAgent<ExecutionInput, ExecutionOutput
     const reasoning: string[] = [];
 
     try {
+      // Pre-flight: ensure task has time context
+      const validation = validationService.validateTaskInput({ task: currentTask, existing: await taskRepo.getAll() });
+      if (!validation.ok) {
+        return {
+          result: {
+            nextStep: null,
+            context: { relatedTasks: [], blockers: [], resources: [] },
+            suggestions: validation.summary ?? []
+          } as ExecutionOutput,
+          confidence: 0.2,
+          metadata: { validation }
+        };
+      }
+
       // Try using Gemini for guidance first
       const geminiService = new GeminiService();
       const prompt = geminiService.generatePrompt('execution', {
@@ -26,13 +40,18 @@ export class ExecutionAgent implements BaseAgent<ExecutionInput, ExecutionOutput
       
       try {
         const geminiResponse = await geminiService.generateContent(prompt);
-        const executionOutput = JSON.parse(geminiResponse);
+        let executionOutput;
+        try {
+          executionOutput = JSON.parse(geminiResponse);
+        } catch (e) {
+          const { parseJsonFromGemini } = await import('@automation/utils');
+          executionOutput = parseJsonFromGemini(geminiResponse) as any;
+        }
         
-        // Find related tasks that might provide context
-        const relatedTasks = await this.findRelatedTasks(currentTask);
-        
+        // Philosophy 2.1: Explain consequences and identifying blockers
         reasoning.push(`AI analyzed task: ${currentTask.title}`);
-        reasoning.push(`Next step: ${executionOutput.nextStep.action} (${executionOutput.nextStep.estimatedTime} minutes)`);
+        reasoning.push(`Identified ${executionOutput.context?.blockers?.length || 0} potential blockers`);
+        reasoning.push(`Next step: ${executionOutput.nextStep?.action || 'Review task'} (${executionOutput.nextStep?.estimatedTime || 0} minutes)`);
         
         // Record agent output for reflection
         await this.recordAgentOutput(input, {
@@ -45,13 +64,14 @@ export class ExecutionAgent implements BaseAgent<ExecutionInput, ExecutionOutput
           result: {
             nextStep: executionOutput.nextStep,
             context: executionOutput.context,
-            suggestions: executionOutput.suggestions
-          } as ExecutionOutput,
-          confidence: 0.85, // Higher confidence with AI assistance
+            suggestions: executionOutput.suggestions,
+            summary: `Translating intent for "${currentTask.title}": Next action is ${executionOutput.nextStep?.action}.`
+          } as any,
+          confidence: 0.85, 
           metadata: {
             taskId: currentTask.id,
-            blockersFound: executionOutput.context.blockers.length,
-            relatedTasksFound: executionOutput.context.relatedTasks.length
+            blockersFound: executionOutput.context?.blockers?.length || 0,
+            relatedTasksFound: executionOutput.context?.relatedTasks?.length || 0
           }
         };
       } catch (geminiError) {

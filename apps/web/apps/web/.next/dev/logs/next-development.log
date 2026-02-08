@@ -1,1 +1,304 @@
-[00:00:00.807] Server  LOG     ✓ Ready in 616ms
+[00:04:19.700] Browser ERROR   ./apps/web/apps/web/components/auth/auth-provider.tsx:12:1
+Module not found: Can't resolve '@/lib/supabase/client'
+  10 | } from "react";
+  11 | import type { User } from "@supabase/supabase-js";
+> 12 | import { createClient } from "@/lib/supabase/client";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  13 |
+  14 | interface AuthContextValue {
+  15 |   user: User | null;
+
+Import map: aliased to relative './lib/supabase/client' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Server Component:
+    ./apps/web/apps/web/components/auth/auth-provider.tsx
+    ./apps/web/apps/web/app/layout.tsx
+
+  Client Component Browser:
+    ./apps/web/apps/web/components/auth/auth-provider.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/auth/auth-provider.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.700] Browser ERROR   ./apps/web/apps/web/components/layout/navigation.tsx:6:1
+Module not found: Can't resolve '@/lib/utils'
+  4 | import { motion, AnimatePresence } from "framer-motion";
+  5 | import Link from "next/link";
+> 6 | import { cn } from "@/lib/utils";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Button } from "@/components/ui/button";
+  8 | import { usePathname } from "next/navigation";
+  9 |
+
+Import map: aliased to relative './lib/utils' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/apps/web/components/layout/navigation.tsx [Client Component Browser]
+    ./apps/web/apps/web/components/layout/layout.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/layout/navigation.tsx [Client Component SSR]
+    ./apps/web/apps/web/components/layout/layout.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.700] Browser ERROR   ./apps/web/apps/web/components/tasks/task-card.tsx:7:1
+Module not found: Can't resolve '@/lib/utils'
+   5 | import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+   6 | import { Button } from "@/components/ui/button";
+>  7 | import { cn } from "@/lib/utils";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { Calendar, Clock, Star } from "lucide-react";
+   9 |
+  10 | const getPriorityColor = (priority: Task['priority']) => {
+
+Import map: aliased to relative './lib/utils' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/apps/web/components/tasks/task-card.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/tasks/task-card.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.700] Browser ERROR   ./apps/web/apps/web/components/ui/button.tsx:4:1
+Module not found: Can't resolve '@/lib/utils'
+  2 |
+  3 | import { forwardRef } from "react";
+> 4 | import { cn } from "@/lib/utils";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 |
+  6 | export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  7 |   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+
+Import map: aliased to relative './lib/utils' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/apps/web/components/ui/button.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/ui/button.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.700] Browser ERROR   ./apps/web/apps/web/components/ui/card.tsx:4:1
+Module not found: Can't resolve '@/lib/utils'
+  2 |
+  3 | import { forwardRef, HTMLAttributes } from "react";
+> 4 | import { cn } from "@/lib/utils";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 |
+  6 | const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  7 |   ({ className, ...props }, ref) => (
+
+Import map: aliased to relative './lib/utils' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/apps/web/components/ui/card.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/ui/card.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.700] Browser ERROR   ./apps/web/apps/web/components/ui/voice-input.tsx:6:1
+Module not found: Can't resolve '@/lib/utils'
+  4 | import { motion, AnimatePresence } from "framer-motion";
+  5 | import { Mic, MicOff, Loader2 } from "lucide-react";
+> 6 | import { cn } from "@/lib/utils";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 |
+  8 | export interface VoiceInputProps {
+  9 |   onTranscriptionComplete?: (text: string) => void;
+
+Import map: aliased to relative './lib/utils' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/apps/web/components/ui/voice-input.tsx [Client Component Browser]
+    ./apps/web/apps/web/components/tasks/task-creation-form.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/ui/voice-input.tsx [Client Component SSR]
+    ./apps/web/apps/web/components/tasks/task-creation-form.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.961] Browser ERROR   ./apps/web/apps/web/components/auth/auth-provider.tsx:12:1
+Module not found: Can't resolve '@/lib/supabase/client'
+  10 | } from "react";
+  11 | import type { User } from "@supabase/supabase-js";
+> 12 | import { createClient } from "@/lib/supabase/client";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  13 |
+  14 | interface AuthContextValue {
+  15 |   user: User | null;
+
+Import map: aliased to relative './lib/supabase/client' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Server Component:
+    ./apps/web/apps/web/components/auth/auth-provider.tsx
+    ./apps/web/apps/web/app/layout.tsx
+
+  Client Component Browser:
+    ./apps/web/apps/web/components/auth/auth-provider.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/auth/auth-provider.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.961] Browser ERROR   ./apps/web/apps/web/components/layout/navigation.tsx:6:1
+Module not found: Can't resolve '@/lib/utils'
+  4 | import { motion, AnimatePresence } from "framer-motion";
+  5 | import Link from "next/link";
+> 6 | import { cn } from "@/lib/utils";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | import { Button } from "@/components/ui/button";
+  8 | import { usePathname } from "next/navigation";
+  9 |
+
+Import map: aliased to relative './lib/utils' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/apps/web/components/layout/navigation.tsx [Client Component Browser]
+    ./apps/web/apps/web/components/layout/layout.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/layout/navigation.tsx [Client Component SSR]
+    ./apps/web/apps/web/components/layout/layout.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.961] Browser ERROR   ./apps/web/apps/web/components/tasks/task-card.tsx:7:1
+Module not found: Can't resolve '@/lib/utils'
+   5 | import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+   6 | import { Button } from "@/components/ui/button";
+>  7 | import { cn } from "@/lib/utils";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { Calendar, Clock, Star } from "lucide-react";
+   9 |
+  10 | const getPriorityColor = (priority: Task['priority']) => {
+
+Import map: aliased to relative './lib/utils' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/apps/web/components/tasks/task-card.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/tasks/task-card.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.961] Browser ERROR   ./apps/web/apps/web/components/ui/button.tsx:4:1
+Module not found: Can't resolve '@/lib/utils'
+  2 |
+  3 | import { forwardRef } from "react";
+> 4 | import { cn } from "@/lib/utils";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 |
+  6 | export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  7 |   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+
+Import map: aliased to relative './lib/utils' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/apps/web/components/ui/button.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/ui/button.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.961] Browser ERROR   ./apps/web/apps/web/components/ui/card.tsx:4:1
+Module not found: Can't resolve '@/lib/utils'
+  2 |
+  3 | import { forwardRef, HTMLAttributes } from "react";
+> 4 | import { cn } from "@/lib/utils";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 |
+  6 | const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  7 |   ({ className, ...props }, ref) => (
+
+Import map: aliased to relative './lib/utils' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/apps/web/components/ui/card.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/ui/card.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+[00:04:19.961] Browser ERROR   ./apps/web/apps/web/components/ui/voice-input.tsx:6:1
+Module not found: Can't resolve '@/lib/utils'
+  4 | import { motion, AnimatePresence } from "framer-motion";
+  5 | import { Mic, MicOff, Loader2 } from "lucide-react";
+> 6 | import { cn } from "@/lib/utils";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 |
+  8 | export interface VoiceInputProps {
+  9 |   onTranscriptionComplete?: (text: string) => void;
+
+Import map: aliased to relative './lib/utils' inside of [project]/apps/web/apps/web
+
+Import traces:
+  Client Component Browser:
+    ./apps/web/apps/web/components/ui/voice-input.tsx [Client Component Browser]
+    ./apps/web/apps/web/components/tasks/task-creation-form.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Client Component Browser]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./apps/web/apps/web/components/ui/voice-input.tsx [Client Component SSR]
+    ./apps/web/apps/web/components/tasks/task-creation-form.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Client Component SSR]
+    ./apps/web/apps/web/app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found

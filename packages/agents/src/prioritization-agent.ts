@@ -8,7 +8,7 @@ import {
   PrioritizedTask
 } from './base-agent';
 import { taskRepo, agentOutputRepo } from '@automation/data';
-import { GeminiService } from '@automation/services';
+import { GeminiService, validationService } from '@automation/services';
 
 export class PrioritizationAgent implements BaseAgent<PrioritizationInput, PrioritizationOutput> {
   type = 'prioritization';
@@ -26,14 +26,36 @@ export class PrioritizationAgent implements BaseAgent<PrioritizationInput, Prior
       });
       
       const geminiResponse = await geminiService.generateContent(prompt);
-      const { tasks: geminiTasks } = JSON.parse(geminiResponse);
+      let parsedResponse;
+      try {
+        parsedResponse = JSON.parse(geminiResponse);
+      } catch (e) {
+        // Handle markdown code blocks if present
+        const { parseJsonFromGemini } = await import('@automation/utils');
+        parsedResponse = parseJsonFromGemini(geminiResponse) as any;
+      }
+      
+      const { tasks: geminiTasks, reasoning: geminiReasoning } = parsedResponse;
       
       // Convert Gemini response to our prioritized tasks
       const prioritizedTasks = await this.createPrioritizedTasksFromGeminiResponse(geminiTasks, tasks);
+      const validation = this.validatePriorities(prioritizedTasks);
+      
+      // Philosophy 5: Pre-Execution Validation Layer
+      const requiresConfirmation = validation.requiresConfirmation || !input.context?.confirmed;
+
+      if (validation.issues.some(i => i.severity === 'error')) {
+        return {
+          result: { tasks: [], reasoning: [validation.summary[0]], validation, requiresConfirmation: true } as any,
+          confidence: 0.3,
+          metadata: { validation, taskCount: tasks.length }
+        };
+      }
       
       // Sort tasks by priority score
       const sortedTasks = prioritizedTasks.sort((a, b) => b.priorityScore - a.priorityScore);
       
+      if (geminiReasoning) reasoning.push(...(Array.isArray(geminiReasoning) ? geminiReasoning : [geminiReasoning]));
       reasoning.push(`Prioritized ${tasks.length} tasks using AI analysis`);
       reasoning.push(`Highest priority: ${sortedTasks[0]?.title || 'None'}`);
       reasoning.push(`Context consideration: ${currentContext ? 'Applied' : 'Not available'}`);
@@ -41,16 +63,33 @@ export class PrioritizationAgent implements BaseAgent<PrioritizationInput, Prior
       // Record agent output for reflection
       await this.recordAgentOutput(input, { tasks: sortedTasks, reasoning });
 
+      // Ensure confirmation is required if issues exist, even if not explicitly confirmed
+      const finalRequiresConfirmation = requiresConfirmation || validation.requiresConfirmation;
+
       return {
-        result: { tasks: sortedTasks, reasoning } as PrioritizationOutput,
+        result: { 
+          tasks: sortedTasks, 
+          reasoning, 
+          validation,
+          requiresConfirmation: finalRequiresConfirmation,
+          summary: `Prioritized ${tasks.length} tasks. Top task: "${sortedTasks[0]?.title}".`
+        } as any,
         confidence: 0.9,
-        metadata: { taskCount: tasks.length, contextConsidered: !!currentContext }
+        metadata: { taskCount: tasks.length, contextConsidered: !!currentContext, validation }
       };
     } catch (error) {
       console.error('Error in Prioritization agent:', error);
       
       // Fallback to rule-based prioritization
       const prioritizedTasks = await this.calculatePriorityScores(tasks, currentContext);
+      const validation = this.validatePriorities(prioritizedTasks);
+      if (!validation.ok) {
+        return {
+          result: { tasks: [], reasoning, validation } as PrioritizationOutput,
+          confidence: 0.25,
+          metadata: { validation, taskCount: tasks.length, contextConsidered: !!currentContext }
+        };
+      }
       const sortedTasks = prioritizedTasks.sort((a, b) => b.priorityScore - a.priorityScore);
       
       reasoning.push(`Used rule-based prioritization as fallback`);
@@ -58,7 +97,7 @@ export class PrioritizationAgent implements BaseAgent<PrioritizationInput, Prior
       return {
         result: { tasks: sortedTasks, reasoning } as PrioritizationOutput,
         confidence: 0.6, // Lower confidence with fallback
-        metadata: { taskCount: tasks.length, contextConsidered: !!currentContext }
+        metadata: { taskCount: tasks.length, contextConsidered: !!currentContext, validation }
       };
     }
   }
@@ -190,6 +229,40 @@ export class PrioritizationAgent implements BaseAgent<PrioritizationInput, Prior
     if (score >= 0.6) return 'high';
     if (score >= 0.4) return 'medium';
     return 'low';
+  }
+
+  private validatePriorities(tasks: PrioritizedTask[]) {
+    // Warn if tasks lack due dates or if urgent tasks exceed 6 per day
+    const issues: any[] = [];
+    const urgentCount = tasks.filter(t => t.priority === 'urgent').length;
+    if (urgentCount > 6) {
+      issues.push({
+        code: 'too_many_urgent',
+        severity: 'warn',
+        message: `There are ${urgentCount} urgent tasks; this may be unrealistic.`,
+      });
+    }
+    tasks.forEach(t => {
+      if (!t.dueDate) {
+        issues.push({
+          code: 'missing_due_date',
+          severity: 'warn',
+          message: `Task "${t.title}" has no due date; prioritize with caution.`,
+          relatedIds: [t.id],
+        });
+      }
+    });
+
+    const ok = !issues.some(i => i.severity === 'error');
+    const summary = issues.length
+      ? [`${issues.filter(i => i.severity === 'warn').length} warning(s) detected`]
+      : ['Validation passed'];
+    return {
+      ok,
+      requiresConfirmation: issues.length > 0,
+      issues,
+      summary,
+    };
   }
 
   private async createPrioritizedTasksFromGeminiResponse(geminiTasks: any[], originalTasks: Task[]): Promise<PrioritizedTask[]> {

@@ -9,8 +9,10 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
-import { taskRepo } from '@automation/data';
+import { taskRepo, planRepo } from '@automation/data';
+import { validationService } from '@automation/services';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 
@@ -31,7 +33,18 @@ export function TaskCreationForm({ visible, onClose, onTaskCreated }: TaskCreati
   const [tags, setTags] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setPriority('medium');
+    setFocusLevel('medium');
+    setEnergyRequirement('medium');
+    setKind('todo');
+    setEstimatedTime('30');
+    setTags('');
+  };
+
+  const handleSubmit = async (confirmed = false) => {
     if (!title.trim()) {
       return;
     }
@@ -43,7 +56,7 @@ export function TaskCreationForm({ visible, onClose, onTaskCreated }: TaskCreati
         .map((tag) => tag.trim())
         .filter((tag) => tag.length > 0);
 
-      await taskRepo.create({
+      const draft = {
         title: title.trim(),
         description: description.trim() || undefined,
         status: 'pending',
@@ -56,17 +69,39 @@ export function TaskCreationForm({ visible, onClose, onTaskCreated }: TaskCreati
         tags: tagsArray,
         subtasks: [],
         dependencies: [],
+      };
+
+      // Pre-commit validation
+      const validation = validationService.validateTaskInput({
+        task: draft,
+        existing: await taskRepo.getAll(),
+        projects: (await planRepo.getAll()) as any,
       });
 
+      if (!validation.ok) {
+        Alert.alert(
+          'Cannot save task',
+          validation.summary?.join('\n') || 'Validation failed. Please fix issues.'
+        );
+        return;
+      }
+
+      if (validation.requiresConfirmation && !confirmed) {
+        Alert.alert(
+          'Please confirm',
+          validation.summary?.join('\n') || 'Review warnings before saving.',
+          [
+            { text: 'Cancel', style: 'cancel', onPress: () => setLoading(false) },
+            { text: 'Save anyway', style: 'destructive', onPress: () => handleSubmit(true) },
+          ]
+        );
+        return;
+      }
+
+      await taskRepo.create(draft);
+
       // Reset form
-      setTitle('');
-      setDescription('');
-      setPriority('medium');
-      setFocusLevel('medium');
-      setEnergyRequirement('medium');
-      setKind('todo');
-      setEstimatedTime('30');
-      setTags('');
+      resetForm();
 
       onTaskCreated?.();
       onClose();

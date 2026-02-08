@@ -1,4 +1,5 @@
 /** Task taxonomy: reminders, todos, habits, dailies. Tasks can also belong to a project. */
+import { ValidationResult } from './validation';
 export type TaskKind = 'reminder' | 'todo' | 'habit' | 'daily';
 
 export interface Task {
@@ -19,6 +20,7 @@ export interface Task {
   tags: string[];
   energyRequirement: 'low' | 'medium' | 'high';
   context: string; // e.g., "home", "work", "anywhere"
+  userId?: string;
   isRecurring?: boolean;
   recurrencePattern?: string;
   /** reminder | todo | habit | daily. Default 'todo'. */
@@ -58,6 +60,7 @@ export interface Plan {
     requiredBreakTime?: number; // in minutes
     timeConstraints?: TimeConstraint[];
   };
+  userId?: string;
 }
 
 export interface TimeConstraint {
@@ -103,6 +106,8 @@ export interface Schedule {
     maxTasks: number;
     maxDeepWorkSessions: number;
   };
+  validation?: ValidationResult;
+  userId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -116,6 +121,16 @@ export interface ScheduledTask {
   status: 'scheduled' | 'in-progress' | 'completed' | 'skipped';
   location?: string;
   context?: string;
+}
+
+/** Generic calendar/time block used for conflict detection and scheduling */
+export interface TimeBlock {
+  start: Date;
+  end: Date;
+  type: 'work' | 'break' | 'meeting' | 'event';
+  taskId?: string;
+  title?: string;
+  location?: string;
 }
 
 export interface AgentOutput {

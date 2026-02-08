@@ -1,4 +1,4 @@
-import { Task, Plan } from '@automation/types';
+import { Task, Plan, ValidationResult } from '@automation/types';
 import {
   BaseAgent,
   BaseAgentOutput,
@@ -7,7 +7,7 @@ import {
   BaseAgentInput
 } from './base-agent';
 import { taskRepo, planRepo, userRepo } from '@automation/data';
-import { GeminiService, memoryService, SimilarItem } from '@automation/services';
+import { GeminiService, memoryService, SimilarItem, validationService } from '@automation/services';
 import { parseJsonFromGemini } from '@automation/utils';
 
 export class PlannerAgent implements BaseAgent<PlannerInput, PlannerOutput> {
@@ -96,7 +96,44 @@ export class PlannerAgent implements BaseAgent<PlannerInput, PlannerOutput> {
         throw new Error('AI returned invalid task structure. Please try again.');
       }
       
-      // Step 5: Create plan with AI-generated title and description
+      // Step 5: Build draft tasks (no persistence yet)
+      const taskDrafts = this.buildTaskDraftsFromGemini(geminiTasks, goals, timeframe);
+
+      // Step 6: Validate drafts pre-commit
+      const validationResults = taskDrafts.map(draft => ({
+        draft,
+        validation: validationService.validateTaskInput({
+          task: draft,
+          existing: memoryContext.existingTasks,
+          projects: memoryContext.existingPlans as any // Mapping plans to projects for pressure calculation
+        })
+      }));
+
+      const mergedValidation = this.mergeValidation(validationResults.map(v => v.validation));
+      const hasBlocking = mergedValidation.issues.some(issue => issue.severity === 'error');
+      const needsConfirmation = mergedValidation.requiresConfirmation || !input.confirm;
+
+      if (hasBlocking || needsConfirmation) {
+        reasoning.push(hasBlocking ? 'Validation blocked plan creation' : 'Validation requires user confirmation');
+        return {
+          result: {
+            plan: null,
+            tasks: [],
+            reasoning,
+            requiresConfirmation: true,
+            validation: mergedValidation,
+            draftTasks: taskDrafts
+          } as PlannerOutput,
+          confidence: hasBlocking ? 0.2 : 0.55,
+          metadata: {
+            validation: mergedValidation,
+            similarItemsFound: similarItems.length,
+            draftTaskCount: taskDrafts.length
+          }
+        };
+      }
+
+      // Step 7: Persist plan and tasks after validation & confirmation
       const planId = await this.createPlan(
         user.id, 
         goals, 
@@ -115,9 +152,7 @@ export class PlannerAgent implements BaseAgent<PlannerInput, PlannerOutput> {
         };
       }
 
-      // Step 6: Convert Gemini response to our Task model
-      // Tasks are already created and saved in createTasksFromGeminiResponse
-      const tasks = await this.createTasksFromGeminiResponse(geminiTasks, plan.id);
+      const tasks = await this.createTasksFromDrafts(taskDrafts, plan.id);
       
       // Update plan with task IDs
       const taskIds = tasks.map(task => task.id);
@@ -138,6 +173,7 @@ export class PlannerAgent implements BaseAgent<PlannerInput, PlannerOutput> {
           planId: plan.id, 
           taskCount: tasks.length,
           similarItemsFound: similarItems.length,
+          validation: mergedValidation
         }
       };
     } catch (error: any) {
@@ -177,33 +213,57 @@ export class PlannerAgent implements BaseAgent<PlannerInput, PlannerOutput> {
     return plan.id;
   }
 
-  private async createTasksFromGeminiResponse(geminiTasks: any[], planId: string): Promise<Task[]> {
+  private buildTaskDraftsFromGemini(
+    geminiTasks: any[],
+    goals: string[],
+    timeframe?: { start: Date; end: Date }
+  ): Array<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>> {
+    return geminiTasks.map((geminiTask, idx) => ({
+      title: geminiTask.title || `Task ${idx + 1} for ${goals[0]}`,
+      description: geminiTask.description || '',
+      status: 'pending',
+      priority: geminiTask.priority || 'medium',
+      estimatedTime: geminiTask.estimatedTime || 30,
+      focusLevel: geminiTask.focusLevel || 'medium',
+      energyRequirement: geminiTask.energyRequirement || 'medium',
+      context: geminiTask.context || '',
+      subtasks: [],
+      dependencies: geminiTask.dependencies || [],
+      tags: geminiTask.tags || [],
+      parentTaskId: undefined, // will be set on persistence
+      kind: (geminiTask.kind || 'todo') as Task['kind'],
+      projectId: geminiTask.projectId ?? undefined,
+      recurrencePerWeek: geminiTask.recurrencePerWeek ?? undefined,
+      dueDate: geminiTask.dueDate ? new Date(geminiTask.dueDate) : timeframe?.end,
+      isRecurring: geminiTask.isRecurring ?? undefined,
+      recurrencePattern: geminiTask.recurrencePattern ?? undefined,
+    }));
+  }
+
+  private async createTasksFromDrafts(
+    drafts: Array<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>,
+    planId: string
+  ): Promise<Task[]> {
     const tasks: Task[] = [];
-    
-    // Convert Gemini tasks to our Task model
-    for (const geminiTask of geminiTasks) {
+    for (const draft of drafts) {
       const task = await taskRepo.create({
-        title: geminiTask.title || 'Untitled Task',
-        description: geminiTask.description || '',
-        status: 'pending',
-        priority: geminiTask.priority || 'medium',
-        estimatedTime: geminiTask.estimatedTime || 30,
-        focusLevel: geminiTask.focusLevel || 'medium',
-        energyRequirement: geminiTask.energyRequirement || 'medium',
-        context: geminiTask.context || '',
-        subtasks: [],
-        dependencies: [],
-        tags: geminiTask.tags || [],
+        ...draft,
         parentTaskId: planId,
-        kind: (geminiTask.kind || 'todo') as 'reminder' | 'todo' | 'habit' | 'daily',
-        projectId: geminiTask.projectId ?? undefined,
-        recurrencePerWeek: geminiTask.recurrencePerWeek ?? undefined,
       });
-      
       tasks.push(task);
     }
-
     return tasks;
+  }
+
+  private mergeValidation(validations: ValidationResult[]): ValidationResult {
+    if (!validations.length) {
+      return { ok: true, requiresConfirmation: false, issues: [], summary: ['Validation passed'] };
+    }
+    const issues = validations.flatMap(v => v.issues || []);
+    const ok = !issues.some(i => i.severity === 'error');
+    const requiresConfirmation = issues.length > 0;
+    const summary = validations.flatMap(v => v.summary || []);
+    return { ok, requiresConfirmation, issues, summary };
   }
 
   private async recordAgentOutput(
