@@ -1,0 +1,10 @@
+var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/tasks/route.js")
+R.c("server/chunks/bfd5c_formdata-node_lib_esm_fileFromPath_dae6470b.js")
+R.c("server/chunks/2069a_next_f93fdd2a._.js")
+R.c("server/chunks/0f5fc_@supabase_auth-js_dist_module_17be6def._.js")
+R.c("server/chunks/bcdff_tr46_f2ec906a._.js")
+R.c("server/chunks/node_modules__pnpm_fc96c58e._.js")
+R.c("server/chunks/[root-of-the-server]__f7b3067b._.js")
+R.c("server/chunks/apps_web_apps_web__next-internal_server_app_api_tasks_route_actions_497c99d5.js")
+R.m("[project]/node_modules/.pnpm/next@16.1.1_@babel+core@7.28.6_babel-plugin-react-compiler@1.0.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/apps/web/apps/web/app/api/tasks/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)")
+module.exports=R.m("[project]/node_modules/.pnpm/next@16.1.1_@babel+core@7.28.6_babel-plugin-react-compiler@1.0.0_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/apps/web/apps/web/app/api/tasks/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)").exports

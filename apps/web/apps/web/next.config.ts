@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: [
+    "@automation/auth",
+    "@automation/data",
+    "@automation/services",
+    "@automation/types",
+    "@automation/utils",
+    "@automation/agents",
+  ],
 };
 
 export default nextConfig;

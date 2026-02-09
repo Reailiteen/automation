@@ -10,6 +10,12 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@automation/auth": "workspace:*",
+    "@automation/data": "workspace:*",
+    "@automation/services": "workspace:*",
+    "@automation/types": "workspace:*",
+    "@automation/utils": "workspace:*",
+    "@automation/agents": "workspace:*",
     "@google/generative-ai": "^0.24.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",

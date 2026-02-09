@@ -215,7 +215,9 @@ function AuthProvider({ children }) {
             return;
         }
         pushRegistrationForUserRef.current = user.id;
-        (0, __TURBOPACK__imported__module__$5b$project$5d2f$apps$2f$web$2f$apps$2f$web$2f$lib$2f$firebase$2f$register$2d$web$2d$push$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["registerWebPush"])().then((result)=>{
+        (0, __TURBOPACK__imported__module__$5b$project$5d2f$apps$2f$web$2f$apps$2f$web$2f$lib$2f$firebase$2f$register$2d$web$2d$push$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["registerWebPush"])({
+            userId: user.id
+        }).then((result)=>{
             if (!result.ok) {
                 console.info("Web push registration skipped:", result.reason);
                 return;

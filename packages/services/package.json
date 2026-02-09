@@ -10,6 +10,7 @@
   "dependencies": {
     "@automation/types": "workspace:*",
     "@automation/data": "workspace:*",
+    "@automation/utils": "workspace:*",
     "@google/generative-ai": "^0.21.0",
     "groq-sdk": "^0.7.0"
   },

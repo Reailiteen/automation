@@ -20,8 +20,13 @@ export default function PushPage() {
   const [sending, setSending] = useState(false);
 
   const setupPush = async (force = false) => {
+    if (!user) {
+      setStatus({ kind: "error", message: "Please sign in first." });
+      return;
+    }
+
     setStatus({ kind: "idle", message: "Requesting permission and token..." });
-    const result = await registerWebPush({ force });
+    const result = await registerWebPush({ force, userId: user.id });
 
     if (!result.ok) {
       setStatus({

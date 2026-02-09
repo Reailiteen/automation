@@ -1,23 +1,5 @@
-[00:10:08.855] Browser ERROR   {}
-[00:10:08.855] Browser ERROR   {"__isAuthError":true,"name":"AuthRetryableFetchError","status":0}
-[00:10:08.855] Browser ERROR   {"__isAuthError":true,"name":"AuthRetryableFetchError","status":0}
-[00:10:08.855] Browser ERROR   {}
-[00:10:09.078] Browser ERROR   {}
-[00:10:09.462] Browser ERROR   {}
-[00:10:10.273] Browser ERROR   {}
-[00:10:11.882] Browser ERROR   {}
-[00:10:15.088] Browser ERROR   {}
-[00:10:21.604] Browser ERROR   {}
-[00:10:34.329] Browser ERROR   {}
-[00:10:34.330] Browser ERROR   {"__isAuthError":true,"name":"AuthRetryableFetchError","status":0}
-[00:10:34.330] Browser ERROR   {}
-[00:10:34.537] Browser ERROR   {}
-[00:10:34.944] Browser ERROR   {}
-[00:10:35.749] Browser ERROR   {}
-[00:10:36.265] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./apps/web/apps/web/lib/firebase/register-web-push.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
-[00:10:36.284] Server  LOG     ✓ Compiled in 76ms
-[00:10:36.344] Server  ERROR   ⨯ Error: ENOENT: no such file or directory, open '/Users/majedahalshorman/Desktop/Side-Projects/automation/apps/web/apps/web/.next/dev/server/app/page/build-manifest.json'
-[00:10:36.377] Server  ERROR   ⨯ Error: ENOENT: no such file or directory, open '/Users/majedahalshorman/Desktop/Side-Projects/automation/apps/web/apps/web/.next/dev/server/pages/_app/build-manifest.json'
-[00:10:36.400] Server  ERROR   Error: ENOENT: no such file or directory, open '/Users/majedahalshorman/Desktop/Side-Projects/automation/apps/web/apps/web/.next/dev/server/app/page/build-manifest.json'
-[00:10:36.415] Server  ERROR   ⨯ Error: ENOENT: no such file or directory, open '/Users/majedahalshorman/Desktop/Side-Projects/automation/apps/web/apps/web/.next/dev/server/pages/_app/build-manifest.json'
-[00:10:36.427] Server  ERROR   Error: ENOENT: no such file or directory, open '/Users/majedahalshorman/Desktop/Side-Projects/automation/apps/web/apps/web/.next/dev/server/pages/_app/build-manifest.json'
+[00:00:00.579] Server  LOG     ✓ Ready in 415ms
+[00:00:06.064] Server  LOG     Gemini API key loaded, length: 39
+[00:00:06.071] Server  LOG     Gemini API key loaded, length: 39
+[00:00:06.344] Browser ERROR   Error fetching tasks: {}
+[00:00:11.070] Browser INFO    Web push registration skipped: notifications-not-granted

@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     pushRegistrationForUserRef.current = user.id;
 
-    registerWebPush().then((result) => {
+    registerWebPush({ userId: user.id }).then((result) => {
       if (!result.ok) {
         console.info("Web push registration skipped:", result.reason);
         return;
