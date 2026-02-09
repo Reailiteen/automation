@@ -13,9 +13,9 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
+# next.js (ignore in all locations, not just root)
+**/.next/
+**/out/
 
 # production
 /build
