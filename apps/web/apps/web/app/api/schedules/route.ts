@@ -2,6 +2,38 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient as createClient } from '@automation/auth';
 import { scheduleRepo, taskRepo } from '@automation/data';
 import { SchedulerAgent } from '@automation/agents';
+import { User as SchedulerUser } from '@automation/types';
+
+function mapSupabaseUserToSchedulerUser(user: {
+  id: string;
+  email?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}): SchedulerUser {
+  return {
+    id: user.id,
+    name: user.email?.split('@')[0] || 'User',
+    email: user.email || 'unknown@example.com',
+    preferences: {
+      workingHours: [],
+      energyProfile: {
+        peakHours: [],
+        mediumHours: [],
+        lowHours: [],
+        recoveryTime: 15,
+      },
+      taskBreakingPreference: 'automatic',
+      schedulingStyle: 'flexible',
+      notificationSettings: {
+        taskReminders: true,
+        scheduleChanges: true,
+        dailySummary: false,
+      },
+    },
+    createdAt: user.created_at ? new Date(user.created_at) : new Date(),
+    updatedAt: user.updated_at ? new Date(user.updated_at) : new Date(),
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -61,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     const schedulerAgent = new SchedulerAgent();
     const result = await schedulerAgent.process({
-      user,
+      user: mapSupabaseUserToSchedulerUser(user),
       tasks,
       date,
       existingEvents,

@@ -17,6 +17,7 @@ const Navigation = () => {
     { name: "Tasks", href: "/tasks" },
     { name: "Pressure", href: "/pressure" },
     { name: "Schedule", href: "/schedule" },
+    { name: "Push", href: "/push" },
   ];
 
   return (

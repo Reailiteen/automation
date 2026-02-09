@@ -3,7 +3,7 @@
  * into intents (task, reminder, habit, note) with lightweight heuristics.
  * Designed to be paired with LLM refinement but provides deterministic fallbacks.
  */
-import { geminiService } from './gemini';
+import { GeminiService } from './gemini';
 
 export type VoiceChunkIntent = 'task' | 'reminder' | 'habit' | 'note' | 'unknown';
 
@@ -16,13 +16,19 @@ export interface VoiceChunk {
 }
 
 export class VoiceIntakeService {
+  private geminiService = new GeminiService();
+
   /**
    * Processes a transcript using LLM for high-quality intent extraction and temporal normalization.
    * Falls back to deterministic heuristics if LLM fails or is unavailable.
    */
   async process(transcript: string, now: Date = new Date(), timeZone: string = 'UTC'): Promise<VoiceChunk[]> {
     try {
-      const result = await geminiService.processVoiceTranscript(transcript, now, timeZone);
+      const result = await this.geminiService.processVoiceTranscript(
+        transcript,
+        now,
+        timeZone
+      ) as { chunks?: VoiceChunk[] };
       if (result && Array.isArray(result.chunks)) {
         return result.chunks;
       }
