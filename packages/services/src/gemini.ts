@@ -10,12 +10,12 @@ export class GeminiService {
 
   constructor() {
     this.apiKey = getEnv('GEMINI_API_KEY') || '';
-    
+
     // Remove any surrounding quotes that might have been included
     if (this.apiKey) {
       this.apiKey = this.apiKey.trim().replace(/^["']|["']$/g, '');
     }
-    
+
     if (!this.apiKey) {
       console.error('GEMINI_API_KEY is not set in environment variables');
     } else {
@@ -33,11 +33,10 @@ export class GeminiService {
       throw new Error('Google Generative AI not initialized. Check your API key.');
     }
 
-    // Try multiple model names in order of preference (updated to use currently available models)
-    // Start with newer models that are actually available in v1beta API
+    // Try multiple model names in order of preference
+    // Reverting to gemini-2.0-flash as it was confirmed to exist (returned 403, not 404)
     const modelNames = [
-      'gemini-2.5-flash',  // Latest available
-      'gemini-2.0-flash',  // Known to work (confirmed from your logs)
+      'gemini-2.5-flash'    // Standard fallback
     ];
 
     // Allow override via environment variable or parameter
@@ -48,14 +47,14 @@ export class GeminiService {
 
     let lastError: Error | null = null;
     let attemptedModels: string[] = [];
-    
+
     for (const model of modelNames) {
       try {
         const genModel = this.genAI.getGenerativeModel({ model });
         const result = await genModel.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
-        
+
         // Silently succeed - no logging needed for normal operation
         return text;
       } catch (error: any) {
@@ -98,23 +97,23 @@ export class GeminiService {
     const memoryContext = context.memoryContext || {};
     const similarItems = context.similarItems || [];
     const originalInput = context.originalInput || context.goals.join(', ');
-    
+
     let memorySection = '';
     if (memoryContext.existingPlans && memoryContext.existingPlans.length > 0) {
-      memorySection += `\n\nExisting Plans (for context, avoid duplication):\n${memoryContext.existingPlans.slice(0, 5).map((plan: any) => 
+      memorySection += `\n\nExisting Plans (for context, avoid duplication):\n${memoryContext.existingPlans.slice(0, 5).map((plan: any) =>
         `- "${plan.title}": ${plan.description} (Goal: ${plan.goal})`
       ).join('\n')}`;
     }
-    
+
     if (memoryContext.relatedTasks && memoryContext.relatedTasks.length > 0) {
-      memorySection += `\n\nRelated Tasks (for context):\n${memoryContext.relatedTasks.slice(0, 5).map((task: any) => 
+      memorySection += `\n\nRelated Tasks (for context):\n${memoryContext.relatedTasks.slice(0, 5).map((task: any) =>
         `- "${task.title}": ${task.description || 'No description'}`
       ).join('\n')}`;
     }
-    
+
     let duplicateWarning = '';
     if (similarItems.length > 0) {
-      duplicateWarning = `\n\n⚠️ DUPLICATE DETECTION: Similar items found:\n${similarItems.map((item: any) => 
+      duplicateWarning = `\n\n⚠️ DUPLICATE DETECTION: Similar items found:\n${similarItems.map((item: any) =>
         `- ${item.type === 'plan' ? 'Plan' : 'Task'}: "${item.item.title}" (${(item.similarity * 100).toFixed(0)}% similar) - ${item.reason}`
       ).join('\n')}\n\nIMPORTANT: If creating a new plan, ensure it's meaningfully different from the above. Consider merging or updating existing items instead.`;
     }

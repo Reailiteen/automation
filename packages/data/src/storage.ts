@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Task, Plan, User, Schedule, AgentOutput, Project } from '@automation/types';
+import { Task, Plan, User, Schedule, AgentOutput, Project, Reminder, InAppReminder } from '@automation/types';
 
 // Detect if we're in a serverless environment (Netlify Functions, AWS Lambda, etc.)
 // In serverless, filesystem is read-only except for /tmp
@@ -36,6 +36,8 @@ const PROJECTS_FILE = path.join(DATA_DIR, 'projects.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SCHEDULES_FILE = path.join(DATA_DIR, 'schedules.json');
 const AGENT_OUTPUTS_FILE = path.join(DATA_DIR, 'agent-outputs.json');
+const REMINDERS_FILE = path.join(DATA_DIR, 'reminders.json');
+const IN_APP_REMINDERS_FILE = path.join(DATA_DIR, 'in-app-reminders.json');
 
 // Initialize data directory and files
 async function ensureDataDir() {
@@ -44,7 +46,7 @@ async function ensureDataDir() {
     await fs.mkdir(DATA_DIR, { recursive: true });
 
     // Create empty JSON files if they don't exist
-    for (const file of [TASKS_FILE, PLANS_FILE, PROJECTS_FILE, USERS_FILE, SCHEDULES_FILE, AGENT_OUTPUTS_FILE]) {
+    for (const file of [TASKS_FILE, PLANS_FILE, PROJECTS_FILE, USERS_FILE, SCHEDULES_FILE, AGENT_OUTPUTS_FILE, REMINDERS_FILE, IN_APP_REMINDERS_FILE]) {
       try {
         await fs.access(file);
       } catch {
@@ -231,4 +233,51 @@ export const agentOutputStorage = {
     outputs.push(output);
     await writeFile(AGENT_OUTPUTS_FILE, outputs);
   }
+};
+
+// Reminder operations
+export const reminderStorage = {
+  getAll: (): Promise<Reminder[]> => readFile<Reminder>(REMINDERS_FILE),
+  byId: async (id: string): Promise<Reminder | undefined> => {
+    const reminders = await readFile<Reminder>(REMINDERS_FILE);
+    return reminders.find((reminder) => reminder.id === id);
+  },
+  save: async (reminder: Reminder): Promise<void> => {
+    const reminders = await readFile<Reminder>(REMINDERS_FILE);
+    const index = reminders.findIndex((existing) => existing.id === reminder.id);
+    if (index >= 0) {
+      reminders[index] = reminder;
+    } else {
+      reminders.push(reminder);
+    }
+    await writeFile(REMINDERS_FILE, reminders);
+  },
+  delete: async (id: string): Promise<void> => {
+    const reminders = await readFile<Reminder>(REMINDERS_FILE);
+    const filtered = reminders.filter((reminder) => reminder.id !== id);
+    await writeFile(REMINDERS_FILE, filtered);
+  },
+};
+
+export const inAppReminderStorage = {
+  getAll: (): Promise<InAppReminder[]> => readFile<InAppReminder>(IN_APP_REMINDERS_FILE),
+  byId: async (id: string): Promise<InAppReminder | undefined> => {
+    const reminders = await readFile<InAppReminder>(IN_APP_REMINDERS_FILE);
+    return reminders.find((reminder) => reminder.id === id);
+  },
+  save: async (reminder: InAppReminder): Promise<void> => {
+    const reminders = await readFile<InAppReminder>(IN_APP_REMINDERS_FILE);
+    const index = reminders.findIndex((existing) => existing.id === reminder.id);
+    if (index >= 0) {
+      reminders[index] = reminder;
+    } else {
+      reminders.push(reminder);
+    }
+    await writeFile(IN_APP_REMINDERS_FILE, reminders);
+  },
+  delete: async (id: string): Promise<void> => {
+    const reminders = await readFile<InAppReminder>(IN_APP_REMINDERS_FILE);
+    const filtered = reminders.filter((reminder) => reminder.id !== id);
+    await writeFile(IN_APP_REMINDERS_FILE, filtered);
+  },
 };

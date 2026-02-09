@@ -1,6 +1,49 @@
 /** Task taxonomy: reminders, todos, habits, dailies. Tasks can also belong to a project. */
 import { ValidationResult } from './validation';
 export type TaskKind = 'reminder' | 'todo' | 'habit' | 'daily';
+export type ReminderChannel = 'email' | 'inApp' | 'push';
+export type ReminderStatus = 'pending' | 'sent' | 'partial' | 'cancelled' | 'failed';
+export type InAppReminderStatus = 'unread' | 'read' | 'archived';
+
+export interface ReminderAttempt {
+  channel: ReminderChannel;
+  status: 'sent' | 'failed' | 'skipped';
+  message: string;
+  timestamp: Date;
+}
+
+export interface Reminder {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  dueAt: Date;
+  channels: ReminderChannel[];
+  status: ReminderStatus;
+  lastSentAt?: Date;
+  sentChannels: ReminderChannel[];
+  failedChannels: ReminderChannel[];
+  attempts: ReminderAttempt[];
+  recipientEmail?: string;
+  pushTokens: string[];
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface InAppReminder {
+  id: string;
+  userId: string;
+  reminderId?: string;
+  title: string;
+  message: string;
+  status: InAppReminderStatus;
+  deepLink?: string;
+  metadata?: Record<string, unknown>;
+  readAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface Task {
   id: string;

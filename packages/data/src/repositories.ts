@@ -1,5 +1,5 @@
-import { Task, Plan, User, Schedule, AgentOutput, Project, TaskKind, ScheduledTask } from '@automation/types';
-import { taskStorage, planStorage, projectStorage, userStorage, scheduleStorage, agentOutputStorage } from './storage';
+import { Task, Plan, User, Schedule, AgentOutput, Project, TaskKind, ScheduledTask, Reminder, ReminderStatus, InAppReminder, InAppReminderStatus } from '@automation/types';
+import { taskStorage, planStorage, projectStorage, userStorage, scheduleStorage, agentOutputStorage, reminderStorage, inAppReminderStorage } from './storage';
 import { getSupabase } from './supabase-client';
 
 // Utility function to generate IDs
@@ -250,6 +250,139 @@ const buildSchedulePayload = (
   validation: schedule.validation ?? null,
   user_id: schedule.userId ?? null,
 });
+
+const normalizeReminderAttempts = (value: unknown): Reminder['attempts'] => {
+  const raw = Array.isArray(value) ? value : [];
+  return raw
+    .filter((attempt) => attempt && typeof attempt === 'object')
+    .map((attempt: any) => ({
+      channel: attempt.channel,
+      status: attempt.status,
+      message: attempt.message ?? '',
+      timestamp: attempt.timestamp
+        ? new Date(attempt.timestamp)
+        : attempt.created_at
+        ? new Date(attempt.created_at)
+        : new Date(),
+    }));
+};
+
+const mapReminderRecord = (record: any): Reminder => ({
+  id: record.id,
+  userId: record.user_id ?? record.userId ?? '',
+  title: record.title ?? '',
+  message: record.message ?? '',
+  dueAt: record.due_at ? new Date(record.due_at) : record.dueAt ? new Date(record.dueAt) : new Date(),
+  channels: ensureArray(record.channels ?? record.channels_json) as Reminder['channels'],
+  status: (record.status ?? 'pending') as ReminderStatus,
+  lastSentAt: record.last_sent_at
+    ? new Date(record.last_sent_at)
+    : record.lastSentAt
+    ? new Date(record.lastSentAt)
+    : undefined,
+  sentChannels: ensureArray(record.sent_channels ?? record.sentChannels) as Reminder['channels'],
+  failedChannels: ensureArray(record.failed_channels ?? record.failedChannels) as Reminder['channels'],
+  attempts: normalizeReminderAttempts(parseJsonField(record.attempts, [])),
+  recipientEmail: record.recipient_email ?? record.recipientEmail ?? undefined,
+  pushTokens: ensureArray(record.push_tokens ?? record.pushTokens),
+  metadata: parseJsonField(record.metadata, {}),
+  createdAt: record.created_at ? new Date(record.created_at) : record.createdAt ? new Date(record.createdAt) : new Date(),
+  updatedAt: record.updated_at ? new Date(record.updated_at) : record.updatedAt ? new Date(record.updatedAt) : new Date(),
+});
+
+const buildReminderPayload = (
+  reminder: Omit<Reminder, 'id' | 'createdAt' | 'updatedAt'>
+): Record<string, any> => ({
+  user_id: reminder.userId,
+  title: reminder.title,
+  message: reminder.message,
+  due_at: reminder.dueAt.toISOString(),
+  channels: reminder.channels ?? [],
+  status: reminder.status,
+  last_sent_at: reminder.lastSentAt ? reminder.lastSentAt.toISOString() : null,
+  sent_channels: reminder.sentChannels ?? [],
+  failed_channels: reminder.failedChannels ?? [],
+  attempts: (reminder.attempts ?? []).map((attempt) => ({
+    channel: attempt.channel,
+    status: attempt.status,
+    message: attempt.message,
+    timestamp: attempt.timestamp.toISOString(),
+  })),
+  recipient_email: reminder.recipientEmail ?? null,
+  push_tokens: reminder.pushTokens ?? [],
+  metadata: reminder.metadata ?? {},
+});
+
+const buildReminderUpdatePayload = (
+  updates: Partial<Omit<Reminder, 'id' | 'createdAt'>>
+): Record<string, any> => {
+  const payload: Record<string, any> = { updated_at: new Date().toISOString() };
+  if (updates.userId !== undefined) payload.user_id = updates.userId;
+  if (updates.title !== undefined) payload.title = updates.title;
+  if (updates.message !== undefined) payload.message = updates.message;
+  if (updates.dueAt !== undefined) payload.due_at = updates.dueAt.toISOString();
+  if (updates.channels !== undefined) payload.channels = updates.channels;
+  if (updates.status !== undefined) payload.status = updates.status;
+  if (updates.lastSentAt !== undefined) {
+    payload.last_sent_at = updates.lastSentAt ? updates.lastSentAt.toISOString() : null;
+  }
+  if (updates.sentChannels !== undefined) payload.sent_channels = updates.sentChannels;
+  if (updates.failedChannels !== undefined) payload.failed_channels = updates.failedChannels;
+  if (updates.attempts !== undefined) {
+    payload.attempts = updates.attempts.map((attempt) => ({
+      channel: attempt.channel,
+      status: attempt.status,
+      message: attempt.message,
+      timestamp: attempt.timestamp.toISOString(),
+    }));
+  }
+  if (updates.recipientEmail !== undefined) payload.recipient_email = updates.recipientEmail;
+  if (updates.pushTokens !== undefined) payload.push_tokens = updates.pushTokens;
+  if (updates.metadata !== undefined) payload.metadata = updates.metadata;
+  return payload;
+};
+
+const mapInAppReminderRecord = (record: any): InAppReminder => ({
+  id: record.id,
+  userId: record.user_id ?? record.userId ?? '',
+  reminderId: record.reminder_id ?? record.reminderId ?? undefined,
+  title: record.title ?? '',
+  message: record.message ?? '',
+  status: (record.status ?? 'unread') as InAppReminderStatus,
+  deepLink: record.deep_link ?? record.deepLink ?? undefined,
+  metadata: parseJsonField(record.metadata, {}),
+  readAt: record.read_at ? new Date(record.read_at) : record.readAt ? new Date(record.readAt) : undefined,
+  createdAt: record.created_at ? new Date(record.created_at) : record.createdAt ? new Date(record.createdAt) : new Date(),
+  updatedAt: record.updated_at ? new Date(record.updated_at) : record.updatedAt ? new Date(record.updatedAt) : new Date(),
+});
+
+const buildInAppReminderPayload = (
+  reminder: Omit<InAppReminder, 'id' | 'createdAt' | 'updatedAt'>
+): Record<string, any> => ({
+  user_id: reminder.userId,
+  reminder_id: reminder.reminderId ?? null,
+  title: reminder.title,
+  message: reminder.message,
+  status: reminder.status,
+  deep_link: reminder.deepLink ?? null,
+  metadata: reminder.metadata ?? {},
+  read_at: reminder.readAt ? reminder.readAt.toISOString() : null,
+});
+
+const buildInAppReminderUpdatePayload = (
+  updates: Partial<Omit<InAppReminder, 'id' | 'createdAt'>>
+): Record<string, any> => {
+  const payload: Record<string, any> = { updated_at: new Date().toISOString() };
+  if (updates.userId !== undefined) payload.user_id = updates.userId;
+  if (updates.reminderId !== undefined) payload.reminder_id = updates.reminderId;
+  if (updates.title !== undefined) payload.title = updates.title;
+  if (updates.message !== undefined) payload.message = updates.message;
+  if (updates.status !== undefined) payload.status = updates.status;
+  if (updates.deepLink !== undefined) payload.deep_link = updates.deepLink;
+  if (updates.metadata !== undefined) payload.metadata = updates.metadata;
+  if (updates.readAt !== undefined) payload.read_at = updates.readAt ? updates.readAt.toISOString() : null;
+  return payload;
+};
 
 // Task Repository
 export const taskRepo = {
@@ -814,4 +947,316 @@ export const agentOutputRepo = {
     const outputs = await agentOutputStorage.getAll();
     return outputs.filter(output => output.agentType === agentType);
   }
+};
+
+// Reminder Repository
+export const reminderRepo = {
+  getAll: async (options?: { userId?: string; status?: ReminderStatus }): Promise<Reminder[]> => {
+    if (supabaseClient) {
+      try {
+        let query = supabaseClient.from('reminders').select('*');
+        if (options?.userId) {
+          query = query.eq('user_id', options.userId);
+        }
+        if (options?.status) {
+          query = query.eq('status', options.status);
+        }
+        const { data, error } = await query;
+        if (!error && data) {
+          return data.map(mapReminderRecord);
+        }
+        if (error) {
+          console.warn('[reminderRepo] Supabase getAll error:', error.message);
+        }
+      } catch (error) {
+        console.warn('[reminderRepo] Supabase getAll failed:', error);
+      }
+    }
+
+    const reminders = await reminderStorage.getAll();
+    return reminders.filter((reminder) => {
+      if (options?.userId && reminder.userId !== options.userId) return false;
+      if (options?.status && reminder.status !== options.status) return false;
+      return true;
+    });
+  },
+
+  getById: async (id: string): Promise<Reminder | null> => {
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('reminders')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (!error && data) {
+          return mapReminderRecord(data);
+        }
+      } catch (error) {
+        console.warn('[reminderRepo] Supabase getById failed:', error);
+      }
+    }
+
+    const reminder = await reminderStorage.byId(id);
+    return reminder || null;
+  },
+
+  create: async (
+    reminderData: Omit<Reminder, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<Reminder> => {
+    if (supabaseClient) {
+      try {
+        const payload = {
+          id: generateId(),
+          ...buildReminderPayload(reminderData),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        const { data, error } = await supabaseClient
+          .from('reminders')
+          .insert(payload)
+          .select('*')
+          .single();
+        if (!error && data) {
+          return mapReminderRecord(data);
+        }
+      } catch (error) {
+        console.warn('[reminderRepo] Supabase create failed:', error);
+      }
+    }
+
+    const now = new Date();
+    const reminder: Reminder = {
+      ...reminderData,
+      id: generateId(),
+      createdAt: now,
+      updatedAt: now,
+    };
+    await reminderStorage.save(reminder);
+    return reminder;
+  },
+
+  update: async (
+    id: string,
+    updates: Partial<Omit<Reminder, 'id' | 'createdAt'>>
+  ): Promise<Reminder | null> => {
+    if (supabaseClient) {
+      try {
+        const payload = buildReminderUpdatePayload(updates);
+        const { data, error } = await supabaseClient
+          .from('reminders')
+          .update(payload)
+          .eq('id', id)
+          .select('*')
+          .single();
+        if (!error && data) {
+          return mapReminderRecord(data);
+        }
+      } catch (error) {
+        console.warn('[reminderRepo] Supabase update failed:', error);
+      }
+    }
+
+    const reminder = await reminderStorage.byId(id);
+    if (!reminder) return null;
+
+    const updatedReminder: Reminder = {
+      ...reminder,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    await reminderStorage.save(updatedReminder);
+    return updatedReminder;
+  },
+
+  delete: async (id: string): Promise<boolean> => {
+    if (supabaseClient) {
+      try {
+        const { error } = await supabaseClient
+          .from('reminders')
+          .delete()
+          .eq('id', id);
+        if (!error) {
+          return true;
+        }
+      } catch (error) {
+        console.warn('[reminderRepo] Supabase delete failed:', error);
+      }
+    }
+
+    try {
+      await reminderStorage.delete(id);
+      return true;
+    } catch (error) {
+      console.error('[reminderRepo] local delete failed:', error);
+      return false;
+    }
+  },
+
+  getDue: async (now: Date, options?: { userId?: string }): Promise<Reminder[]> => {
+    if (supabaseClient) {
+      try {
+        let query = supabaseClient
+          .from('reminders')
+          .select('*')
+          .eq('status', 'pending')
+          .lte('due_at', now.toISOString());
+        if (options?.userId) {
+          query = query.eq('user_id', options.userId);
+        }
+        const { data, error } = await query;
+        if (!error && data) {
+          return data.map(mapReminderRecord);
+        }
+      } catch (error) {
+        console.warn('[reminderRepo] Supabase getDue failed:', error);
+      }
+    }
+
+    const reminders = await reminderStorage.getAll();
+    return reminders.filter((reminder) => {
+      if (reminder.status !== 'pending') return false;
+      if (options?.userId && reminder.userId !== options.userId) return false;
+      return new Date(reminder.dueAt) <= now;
+    });
+  },
+};
+
+export const inAppReminderRepo = {
+  getAll: async (options?: {
+    userId?: string;
+    status?: InAppReminderStatus;
+    unreadOnly?: boolean;
+  }): Promise<InAppReminder[]> => {
+    if (supabaseClient) {
+      try {
+        let query = supabaseClient.from('in_app_reminders').select('*');
+        if (options?.userId) {
+          query = query.eq('user_id', options.userId);
+        }
+        if (options?.status) {
+          query = query.eq('status', options.status);
+        } else if (options?.unreadOnly) {
+          query = query.eq('status', 'unread');
+        }
+        const { data, error } = await query.order('created_at', { ascending: false });
+        if (!error && data) {
+          return data.map(mapInAppReminderRecord);
+        }
+        if (error) {
+          console.warn('[inAppReminderRepo] Supabase getAll error:', error.message);
+        }
+      } catch (error) {
+        console.warn('[inAppReminderRepo] Supabase getAll failed:', error);
+      }
+    }
+
+    const reminders = await inAppReminderStorage.getAll();
+    const filtered = reminders.filter((reminder) => {
+      if (options?.userId && reminder.userId !== options.userId) return false;
+      if (options?.status && reminder.status !== options.status) return false;
+      if (options?.unreadOnly && reminder.status !== 'unread') return false;
+      return true;
+    });
+    return filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  },
+
+  getById: async (id: string): Promise<InAppReminder | null> => {
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('in_app_reminders')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (!error && data) {
+          return mapInAppReminderRecord(data);
+        }
+      } catch (error) {
+        console.warn('[inAppReminderRepo] Supabase getById failed:', error);
+      }
+    }
+
+    const reminder = await inAppReminderStorage.byId(id);
+    return reminder ?? null;
+  },
+
+  create: async (
+    data: Omit<InAppReminder, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<InAppReminder> => {
+    if (supabaseClient) {
+      try {
+        const payload = {
+          id: generateId(),
+          ...buildInAppReminderPayload(data),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        const { data: inserted, error } = await supabaseClient
+          .from('in_app_reminders')
+          .insert(payload)
+          .select('*')
+          .single();
+        if (!error && inserted) {
+          return mapInAppReminderRecord(inserted);
+        }
+      } catch (error) {
+        console.warn('[inAppReminderRepo] Supabase create failed:', error);
+      }
+    }
+
+    const now = new Date();
+    const reminder: InAppReminder = {
+      ...data,
+      id: generateId(),
+      createdAt: now,
+      updatedAt: now,
+    };
+    await inAppReminderStorage.save(reminder);
+    return reminder;
+  },
+
+  update: async (
+    id: string,
+    updates: Partial<Omit<InAppReminder, 'id' | 'createdAt'>>
+  ): Promise<InAppReminder | null> => {
+    if (supabaseClient) {
+      try {
+        const payload = buildInAppReminderUpdatePayload(updates);
+        const { data, error } = await supabaseClient
+          .from('in_app_reminders')
+          .update(payload)
+          .eq('id', id)
+          .select('*')
+          .single();
+        if (!error && data) {
+          return mapInAppReminderRecord(data);
+        }
+      } catch (error) {
+        console.warn('[inAppReminderRepo] Supabase update failed:', error);
+      }
+    }
+
+    const reminder = await inAppReminderStorage.byId(id);
+    if (!reminder) return null;
+    const updated: InAppReminder = {
+      ...reminder,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    await inAppReminderStorage.save(updated);
+    return updated;
+  },
+
+  markAsRead: async (id: string): Promise<InAppReminder | null> => {
+    return inAppReminderRepo.update(id, { status: 'read', readAt: new Date() });
+  },
+
+  markAllAsRead: async (userId: string): Promise<number> => {
+    const unread = await inAppReminderRepo.getAll({ userId, unreadOnly: true });
+    for (const item of unread) {
+      await inAppReminderRepo.markAsRead(item.id);
+    }
+    return unread.length;
+  },
 };

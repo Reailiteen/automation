@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Task, Plan, User, Schedule, AgentOutput, Project } from '@automation/types';
+import { Task, Plan, User, Schedule, AgentOutput, Project, Reminder, InAppReminder } from '@automation/types';
 
 // AsyncStorage keys
 const TASKS_KEY = '@automation:tasks';
@@ -8,6 +8,8 @@ const PROJECTS_KEY = '@automation:projects';
 const USERS_KEY = '@automation:users';
 const SCHEDULES_KEY = '@automation:schedules';
 const AGENT_OUTPUTS_KEY = '@automation:agent-outputs';
+const REMINDERS_KEY = '@automation:reminders';
+const IN_APP_REMINDERS_KEY = '@automation:in-app-reminders';
 
 // Generic read/write functions
 async function readData<T>(key: string): Promise<T[]> {
@@ -180,5 +182,62 @@ export const agentOutputStorage = {
     const outputs = await readData<AgentOutput>(AGENT_OUTPUTS_KEY);
     outputs.push(output);
     await writeData(AGENT_OUTPUTS_KEY, outputs);
+  },
+};
+
+// Reminder operations
+export const reminderStorage = {
+  getAll: (): Promise<Reminder[]> => readData<Reminder>(REMINDERS_KEY),
+
+  byId: async (id: string): Promise<Reminder | undefined> => {
+    const reminders = await readData<Reminder>(REMINDERS_KEY);
+    return reminders.find((reminder) => reminder.id === id);
+  },
+
+  save: async (reminder: Reminder): Promise<void> => {
+    const reminders = await readData<Reminder>(REMINDERS_KEY);
+    const index = reminders.findIndex((existing) => existing.id === reminder.id);
+
+    if (index >= 0) {
+      reminders[index] = reminder;
+    } else {
+      reminders.push(reminder);
+    }
+
+    await writeData(REMINDERS_KEY, reminders);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    const reminders = await readData<Reminder>(REMINDERS_KEY);
+    const filtered = reminders.filter((reminder) => reminder.id !== id);
+    await writeData(REMINDERS_KEY, filtered);
+  },
+};
+
+export const inAppReminderStorage = {
+  getAll: (): Promise<InAppReminder[]> => readData<InAppReminder>(IN_APP_REMINDERS_KEY),
+
+  byId: async (id: string): Promise<InAppReminder | undefined> => {
+    const reminders = await readData<InAppReminder>(IN_APP_REMINDERS_KEY);
+    return reminders.find((reminder) => reminder.id === id);
+  },
+
+  save: async (reminder: InAppReminder): Promise<void> => {
+    const reminders = await readData<InAppReminder>(IN_APP_REMINDERS_KEY);
+    const index = reminders.findIndex((existing) => existing.id === reminder.id);
+
+    if (index >= 0) {
+      reminders[index] = reminder;
+    } else {
+      reminders.push(reminder);
+    }
+
+    await writeData(IN_APP_REMINDERS_KEY, reminders);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    const reminders = await readData<InAppReminder>(IN_APP_REMINDERS_KEY);
+    const filtered = reminders.filter((reminder) => reminder.id !== id);
+    await writeData(IN_APP_REMINDERS_KEY, filtered);
   },
 };

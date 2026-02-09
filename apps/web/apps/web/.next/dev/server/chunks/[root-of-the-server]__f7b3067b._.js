@@ -138,6 +138,8 @@ __turbopack_context__.s([
     ()=>planStorage,
     "projectStorage",
     ()=>projectStorage,
+    "reminderStorage",
+    ()=>reminderStorage,
     "scheduleStorage",
     ()=>scheduleStorage,
     "taskStorage",
@@ -171,6 +173,7 @@ const PROJECTS_FILE = __TURBOPACK__imported__module__$5b$externals$5d2f$path__$5
 const USERS_FILE = __TURBOPACK__imported__module__$5b$externals$5d2f$path__$5b$external$5d$__$28$path$2c$__cjs$29$__["default"].join(DATA_DIR, 'users.json');
 const SCHEDULES_FILE = __TURBOPACK__imported__module__$5b$externals$5d2f$path__$5b$external$5d$__$28$path$2c$__cjs$29$__["default"].join(DATA_DIR, 'schedules.json');
 const AGENT_OUTPUTS_FILE = __TURBOPACK__imported__module__$5b$externals$5d2f$path__$5b$external$5d$__$28$path$2c$__cjs$29$__["default"].join(DATA_DIR, 'agent-outputs.json');
+const REMINDERS_FILE = __TURBOPACK__imported__module__$5b$externals$5d2f$path__$5b$external$5d$__$28$path$2c$__cjs$29$__["default"].join(DATA_DIR, 'reminders.json');
 // Initialize data directory and files
 async function ensureDataDir() {
     const isServerless = detectServerless();
@@ -185,7 +188,8 @@ async function ensureDataDir() {
             PROJECTS_FILE,
             USERS_FILE,
             SCHEDULES_FILE,
-            AGENT_OUTPUTS_FILE
+            AGENT_OUTPUTS_FILE,
+            REMINDERS_FILE
         ]){
             try {
                 await __TURBOPACK__imported__module__$5b$externals$5d2f$fs__$5b$external$5d$__$28$fs$2c$__cjs$29$__["promises"].access(file);
@@ -347,6 +351,28 @@ const agentOutputStorage = {
         await writeFile(AGENT_OUTPUTS_FILE, outputs);
     }
 };
+const reminderStorage = {
+    getAll: ()=>readFile(REMINDERS_FILE),
+    byId: async (id)=>{
+        const reminders = await readFile(REMINDERS_FILE);
+        return reminders.find((reminder)=>reminder.id === id);
+    },
+    save: async (reminder)=>{
+        const reminders = await readFile(REMINDERS_FILE);
+        const index = reminders.findIndex((existing)=>existing.id === reminder.id);
+        if (index >= 0) {
+            reminders[index] = reminder;
+        } else {
+            reminders.push(reminder);
+        }
+        await writeFile(REMINDERS_FILE, reminders);
+    },
+    delete: async (id)=>{
+        const reminders = await readFile(REMINDERS_FILE);
+        const filtered = reminders.filter((reminder)=>reminder.id !== id);
+        await writeFile(REMINDERS_FILE, filtered);
+    }
+};
 }),
 "[project]/packages/data/src/supabase-client.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
@@ -384,6 +410,8 @@ __turbopack_context__.s([
     ()=>planRepo,
     "projectRepo",
     ()=>projectRepo,
+    "reminderRepo",
+    ()=>reminderRepo,
     "scheduleRepo",
     ()=>scheduleRepo,
     "taskRepo",
@@ -611,6 +639,81 @@ const buildSchedulePayload = (schedule)=>({
         validation: schedule.validation ?? null,
         user_id: schedule.userId ?? null
     });
+const normalizeReminderAttempts = (value)=>{
+    const raw = Array.isArray(value) ? value : [];
+    return raw.filter((attempt)=>attempt && typeof attempt === 'object').map((attempt)=>({
+            channel: attempt.channel,
+            status: attempt.status,
+            message: attempt.message ?? '',
+            timestamp: attempt.timestamp ? new Date(attempt.timestamp) : attempt.created_at ? new Date(attempt.created_at) : new Date()
+        }));
+};
+const mapReminderRecord = (record)=>({
+        id: record.id,
+        userId: record.user_id ?? record.userId ?? '',
+        title: record.title ?? '',
+        message: record.message ?? '',
+        dueAt: record.due_at ? new Date(record.due_at) : record.dueAt ? new Date(record.dueAt) : new Date(),
+        channels: ensureArray(record.channels ?? record.channels_json),
+        status: record.status ?? 'pending',
+        lastSentAt: record.last_sent_at ? new Date(record.last_sent_at) : record.lastSentAt ? new Date(record.lastSentAt) : undefined,
+        sentChannels: ensureArray(record.sent_channels ?? record.sentChannels),
+        failedChannels: ensureArray(record.failed_channels ?? record.failedChannels),
+        attempts: normalizeReminderAttempts(parseJsonField(record.attempts, [])),
+        recipientEmail: record.recipient_email ?? record.recipientEmail ?? undefined,
+        pushTokens: ensureArray(record.push_tokens ?? record.pushTokens),
+        metadata: parseJsonField(record.metadata, {}),
+        createdAt: record.created_at ? new Date(record.created_at) : record.createdAt ? new Date(record.createdAt) : new Date(),
+        updatedAt: record.updated_at ? new Date(record.updated_at) : record.updatedAt ? new Date(record.updatedAt) : new Date()
+    });
+const buildReminderPayload = (reminder)=>({
+        user_id: reminder.userId,
+        title: reminder.title,
+        message: reminder.message,
+        due_at: reminder.dueAt.toISOString(),
+        channels: reminder.channels ?? [],
+        status: reminder.status,
+        last_sent_at: reminder.lastSentAt ? reminder.lastSentAt.toISOString() : null,
+        sent_channels: reminder.sentChannels ?? [],
+        failed_channels: reminder.failedChannels ?? [],
+        attempts: (reminder.attempts ?? []).map((attempt)=>({
+                channel: attempt.channel,
+                status: attempt.status,
+                message: attempt.message,
+                timestamp: attempt.timestamp.toISOString()
+            })),
+        recipient_email: reminder.recipientEmail ?? null,
+        push_tokens: reminder.pushTokens ?? [],
+        metadata: reminder.metadata ?? {}
+    });
+const buildReminderUpdatePayload = (updates)=>{
+    const payload = {
+        updated_at: new Date().toISOString()
+    };
+    if (updates.userId !== undefined) payload.user_id = updates.userId;
+    if (updates.title !== undefined) payload.title = updates.title;
+    if (updates.message !== undefined) payload.message = updates.message;
+    if (updates.dueAt !== undefined) payload.due_at = updates.dueAt.toISOString();
+    if (updates.channels !== undefined) payload.channels = updates.channels;
+    if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.lastSentAt !== undefined) {
+        payload.last_sent_at = updates.lastSentAt ? updates.lastSentAt.toISOString() : null;
+    }
+    if (updates.sentChannels !== undefined) payload.sent_channels = updates.sentChannels;
+    if (updates.failedChannels !== undefined) payload.failed_channels = updates.failedChannels;
+    if (updates.attempts !== undefined) {
+        payload.attempts = updates.attempts.map((attempt)=>({
+                channel: attempt.channel,
+                status: attempt.status,
+                message: attempt.message,
+                timestamp: attempt.timestamp.toISOString()
+            }));
+    }
+    if (updates.recipientEmail !== undefined) payload.recipient_email = updates.recipientEmail;
+    if (updates.pushTokens !== undefined) payload.push_tokens = updates.pushTokens;
+    if (updates.metadata !== undefined) payload.metadata = updates.metadata;
+    return payload;
+};
 const taskRepo = {
     getAll: async (options)=>{
         if (supabaseClient) {
@@ -1056,6 +1159,140 @@ const agentOutputRepo = {
         return outputs.filter((output)=>output.agentType === agentType);
     }
 };
+const reminderRepo = {
+    getAll: async (options)=>{
+        if (supabaseClient) {
+            try {
+                let query = supabaseClient.from('reminders').select('*');
+                if (options?.userId) {
+                    query = query.eq('user_id', options.userId);
+                }
+                if (options?.status) {
+                    query = query.eq('status', options.status);
+                }
+                const { data, error } = await query;
+                if (!error && data) {
+                    return data.map(mapReminderRecord);
+                }
+                if (error) {
+                    console.warn('[reminderRepo] Supabase getAll error:', error.message);
+                }
+            } catch (error) {
+                console.warn('[reminderRepo] Supabase getAll failed:', error);
+            }
+        }
+        const reminders = await __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$data$2f$src$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["reminderStorage"].getAll();
+        return reminders.filter((reminder)=>{
+            if (options?.userId && reminder.userId !== options.userId) return false;
+            if (options?.status && reminder.status !== options.status) return false;
+            return true;
+        });
+    },
+    getById: async (id)=>{
+        if (supabaseClient) {
+            try {
+                const { data, error } = await supabaseClient.from('reminders').select('*').eq('id', id).single();
+                if (!error && data) {
+                    return mapReminderRecord(data);
+                }
+            } catch (error) {
+                console.warn('[reminderRepo] Supabase getById failed:', error);
+            }
+        }
+        const reminder = await __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$data$2f$src$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["reminderStorage"].byId(id);
+        return reminder || null;
+    },
+    create: async (reminderData)=>{
+        if (supabaseClient) {
+            try {
+                const payload = {
+                    id: generateId(),
+                    ...buildReminderPayload(reminderData),
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+                const { data, error } = await supabaseClient.from('reminders').insert(payload).select('*').single();
+                if (!error && data) {
+                    return mapReminderRecord(data);
+                }
+            } catch (error) {
+                console.warn('[reminderRepo] Supabase create failed:', error);
+            }
+        }
+        const now = new Date();
+        const reminder = {
+            ...reminderData,
+            id: generateId(),
+            createdAt: now,
+            updatedAt: now
+        };
+        await __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$data$2f$src$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["reminderStorage"].save(reminder);
+        return reminder;
+    },
+    update: async (id, updates)=>{
+        if (supabaseClient) {
+            try {
+                const payload = buildReminderUpdatePayload(updates);
+                const { data, error } = await supabaseClient.from('reminders').update(payload).eq('id', id).select('*').single();
+                if (!error && data) {
+                    return mapReminderRecord(data);
+                }
+            } catch (error) {
+                console.warn('[reminderRepo] Supabase update failed:', error);
+            }
+        }
+        const reminder = await __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$data$2f$src$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["reminderStorage"].byId(id);
+        if (!reminder) return null;
+        const updatedReminder = {
+            ...reminder,
+            ...updates,
+            updatedAt: new Date()
+        };
+        await __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$data$2f$src$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["reminderStorage"].save(updatedReminder);
+        return updatedReminder;
+    },
+    delete: async (id)=>{
+        if (supabaseClient) {
+            try {
+                const { error } = await supabaseClient.from('reminders').delete().eq('id', id);
+                if (!error) {
+                    return true;
+                }
+            } catch (error) {
+                console.warn('[reminderRepo] Supabase delete failed:', error);
+            }
+        }
+        try {
+            await __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$data$2f$src$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["reminderStorage"].delete(id);
+            return true;
+        } catch (error) {
+            console.error('[reminderRepo] local delete failed:', error);
+            return false;
+        }
+    },
+    getDue: async (now, options)=>{
+        if (supabaseClient) {
+            try {
+                let query = supabaseClient.from('reminders').select('*').eq('status', 'pending').lte('due_at', now.toISOString());
+                if (options?.userId) {
+                    query = query.eq('user_id', options.userId);
+                }
+                const { data, error } = await query;
+                if (!error && data) {
+                    return data.map(mapReminderRecord);
+                }
+            } catch (error) {
+                console.warn('[reminderRepo] Supabase getDue failed:', error);
+            }
+        }
+        const reminders = await __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$data$2f$src$2f$storage$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["reminderStorage"].getAll();
+        return reminders.filter((reminder)=>{
+            if (reminder.status !== 'pending') return false;
+            if (options?.userId && reminder.userId !== options.userId) return false;
+            return new Date(reminder.dueAt) <= now;
+        });
+    }
+};
 }),
 "[project]/packages/data/src/index.ts [app-route] (ecmascript) <locals>", ((__turbopack_context__) => {
 "use strict";
@@ -1202,11 +1439,10 @@ class GeminiService {
         if (!this.genAI) {
             throw new Error('Google Generative AI not initialized. Check your API key.');
         }
-        // Try multiple model names in order of preference (updated to use currently available models)
-        // Start with newer models that are actually available in v1beta API
+        // Try multiple model names in order of preference
+        // Reverting to gemini-2.0-flash as it was confirmed to exist (returned 403, not 404)
         const modelNames = [
-            'gemini-2.5-flash',
-            'gemini-2.0-flash'
+            'gemini-2.5-flash' // Standard fallback
         ];
         // Allow override via environment variable or parameter
         const preferredModel = (0, __TURBOPACK__imported__module__$5b$project$5d2f$packages$2f$services$2f$src$2f$env$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getEnv"])('GEMINI_MODEL') || modelName;

@@ -1,5 +1,11 @@
-[00:00:00.579] Server  LOG     ✓ Ready in 415ms
-[00:00:06.064] Server  LOG     Gemini API key loaded, length: 39
-[00:00:06.071] Server  LOG     Gemini API key loaded, length: 39
-[00:00:06.344] Browser ERROR   Error fetching tasks: {}
-[00:00:11.070] Browser INFO    Web push registration skipped: notifications-not-granted
+[00:00:01.355] Server  LOG     ✓ Ready in 1023ms
+[00:00:02.116] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:02.272] Server  LOG     Gemini API key loaded, length: 39
+[00:00:02.275] Server  LOG     Gemini API key loaded, length: 39
+[00:00:02.319] Browser ERROR   Web push registration failed: {}
+[00:00:05.007] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:05.236] Browser ERROR   Web push registration failed: {}
+[00:00:25.909] Server  LOG     Gemini API key loaded, length: 39
+[00:00:28.252] Browser LOG     Planner API response: {"confidence":0.2,"metadata":{"draftTaskCount":1,"similarItemsFound":0,"validation":{"issues":[{"code":"time_missing","message":"A concrete time (due date or schedule) is required before committing the task.","severity":"error"}],"ok":false,"requiresConfirmation":true,"summary":["1 blocking issue(s), 0 warning(s) detected","ERROR: A concrete time (due date or schedule) is required before committing the task."]}},"result":{"draftTasks":[{"context":"anywhere","dependencies":[],"description":"Establish a specific reminder for the user about their meeting taking place tomorrow. The reminder should trigger at an appropriate time before the meeting.","energyRequirement":"low","estimatedTime":1,"focusLevel":"shallow","kind":"reminder","priority":"medium","recurrencePerWeek":1,"status":"pending","subtasks":[],"tags":["meeting","reminder"],"title":"Set Tomorrow's Meeting Reminder"}],"plan":null,"reasoning":["Loaded context: 0 plans, 0 tasks","Found 0 related plans, 0 related tasks","Validation blocked plan creation"],"requiresConfirmation":true,"tasks":[],"validation":{"issues":[{"code":"time_missing","message":"A concrete time (due date or schedule) is required before committing the task.","severity":"error"}],"ok":false,"requiresConfirmation":true,"summary":["1 blocking issue(s), 0 warning(s) detected","ERROR: A concrete time (due date or schedule) is required before committing the task."]}}}
+[00:00:49.118] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:49.256] Browser ERROR   Web push registration failed: {}

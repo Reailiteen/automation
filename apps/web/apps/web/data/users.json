@@ -1,1 +1,25 @@
-[]
+[
+  {
+    "name": "Default User",
+    "email": "user@example.com",
+    "preferences": {
+      "workingHours": [],
+      "energyProfile": {
+        "peakHours": [],
+        "mediumHours": [],
+        "lowHours": [],
+        "recoveryTime": 15
+      },
+      "taskBreakingPreference": "automatic",
+      "schedulingStyle": "flexible",
+      "notificationSettings": {
+        "taskReminders": true,
+        "scheduleChanges": true,
+        "dailySummary": true
+      }
+    },
+    "id": "default-user",
+    "createdAt": "2026-02-09T08:56:53.701Z",
+    "updatedAt": "2026-02-09T08:56:53.701Z"
+  }
+]
