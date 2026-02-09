@@ -13,11 +13,14 @@ type Status = {
 export default function PushPage() {
   const { user, loading } = useAuth();
   const [token, setToken] = useState("");
+  const [appTokenInput, setAppTokenInput] = useState("");
+  const [appDeviceId, setAppDeviceId] = useState("");
   const [status, setStatus] = useState<Status>({
     kind: "idle",
     message: "Ready",
   });
   const [sending, setSending] = useState(false);
+  const [savingAppToken, setSavingAppToken] = useState(false);
 
   const setupPush = async (force = false) => {
     if (!user) {
@@ -92,6 +95,54 @@ export default function PushPage() {
     }
   };
 
+  const saveAppToken = async () => {
+    if (!user) {
+      setStatus({ kind: "error", message: "Please sign in first." });
+      return;
+    }
+    const normalized = appTokenInput.trim();
+    if (!normalized) {
+      setStatus({ kind: "error", message: "Enter an app FCM token first." });
+      return;
+    }
+
+    setSavingAppToken(true);
+    try {
+      const response = await fetch("/api/notifications/fcm-token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token: normalized,
+          platform: "app",
+          deviceId: appDeviceId.trim() || undefined,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setStatus({
+          kind: "error",
+          message: payload?.error || "Failed to save app token.",
+        });
+        return;
+      }
+
+      setStatus({
+        kind: "ok",
+        message: "App FCM token saved for this user.",
+      });
+      setAppTokenInput("");
+    } catch (error) {
+      setStatus({
+        kind: "error",
+        message: error instanceof Error ? error.message : "Failed to save app token.",
+      });
+    } finally {
+      setSavingAppToken(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="max-w-2xl mx-auto space-y-6">
@@ -145,6 +196,34 @@ export default function PushPage() {
               <p className="text-xs text-gray-400 break-all">
                 Token: {token || "Not generated yet"}
               </p>
+            </div>
+
+            <div className="rounded-md border border-gray-700 bg-gray-900/60 p-4 space-y-3">
+              <h2 className="text-lg font-semibold text-white">
+                Register App Token (Mobile FCM)
+              </h2>
+              <p className="text-sm text-gray-400">
+                Paste your mobile app FCM token here to enable push delivery to app devices.
+              </p>
+              <input
+                value={appTokenInput}
+                onChange={(event) => setAppTokenInput(event.target.value)}
+                placeholder="App FCM token"
+                className="w-full px-3 py-2 rounded-md bg-gray-950 border border-gray-700 text-gray-200 text-sm"
+              />
+              <input
+                value={appDeviceId}
+                onChange={(event) => setAppDeviceId(event.target.value)}
+                placeholder="Optional device label (e.g. iphone-15-pro)"
+                className="w-full px-3 py-2 rounded-md bg-gray-950 border border-gray-700 text-gray-200 text-sm"
+              />
+              <button
+                onClick={() => void saveAppToken()}
+                disabled={savingAppToken}
+                className="px-4 py-2 rounded-md bg-cyan-600 hover:bg-cyan-700 text-white disabled:opacity-60"
+              >
+                {savingAppToken ? "Saving..." : "Save App Token"}
+              </button>
             </div>
           </>
         )}

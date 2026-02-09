@@ -135,6 +135,21 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updates.metadata = body.metadata as Record<string, unknown>;
     }
 
+    if (body?.deepLink !== undefined) {
+      if (typeof body.deepLink !== 'string' || !body.deepLink.trim()) {
+        return NextResponse.json({ error: 'deepLink must be a non-empty string.' }, { status: 400 });
+      }
+      const currentMetadata =
+        updates.metadata ??
+        ((existing.metadata && typeof existing.metadata === 'object'
+          ? existing.metadata
+          : {}) as Record<string, unknown>);
+      updates.metadata = {
+        ...(currentMetadata as Record<string, unknown>),
+        url: body.deepLink.trim(),
+      };
+    }
+
     const updated = await reminderRepo.update(id, updates);
     if (!updated) {
       return NextResponse.json({ error: 'Reminder not found' }, { status: 404 });

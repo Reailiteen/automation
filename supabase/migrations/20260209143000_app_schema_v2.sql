@@ -961,246 +961,76 @@ as $$
 $$;
 
 -- --------------------------------------------------------------------------
--- RLS policies
+-- RLS DISABLED (for development/testing)
 -- --------------------------------------------------------------------------
 
-alter table app.profiles enable row level security;
-alter table app.workspaces enable row level security;
-alter table app.workspace_members enable row level security;
-alter table app.user_preferences enable row level security;
-alter table app.projects enable row level security;
-alter table app.tasks enable row level security;
-alter table app.task_dependencies enable row level security;
-alter table app.labels enable row level security;
-alter table app.task_labels enable row level security;
-alter table app.plans enable row level security;
-alter table app.plan_tasks enable row level security;
-alter table app.schedule_days enable row level security;
-alter table app.schedule_entries enable row level security;
-alter table app.reminders enable row level security;
-alter table app.reminder_channels enable row level security;
-alter table app.reminder_push_tokens enable row level security;
-alter table app.reminder_attempts enable row level security;
-alter table app.notification_devices enable row level security;
-alter table app.agent_runs enable row level security;
-alter table app.chat_threads enable row level security;
-alter table app.chat_messages enable row level security;
-alter table app.knowledge_entries enable row level security;
-alter table app.integration_connections enable row level security;
-alter table app.integration_sync_runs enable row level security;
-alter table app.external_links enable row level security;
-alter table app.automation_rules enable row level security;
-alter table app.automation_runs enable row level security;
+-- Disable RLS on all tables
+alter table app.profiles disable row level security;
+alter table app.workspaces disable row level security;
+alter table app.workspace_members disable row level security;
+alter table app.user_preferences disable row level security;
+alter table app.projects disable row level security;
+alter table app.tasks disable row level security;
+alter table app.task_dependencies disable row level security;
+alter table app.labels disable row level security;
+alter table app.task_labels disable row level security;
+alter table app.plans disable row level security;
+alter table app.plan_tasks disable row level security;
+alter table app.schedule_days disable row level security;
+alter table app.schedule_entries disable row level security;
+alter table app.reminders disable row level security;
+alter table app.reminder_channels disable row level security;
+alter table app.reminder_push_tokens disable row level security;
+alter table app.reminder_attempts disable row level security;
+alter table app.notification_devices disable row level security;
+alter table app.agent_runs disable row level security;
+alter table app.chat_threads disable row level security;
+alter table app.chat_messages disable row level security;
+alter table app.knowledge_entries disable row level security;
+alter table app.integration_connections disable row level security;
+alter table app.integration_sync_runs disable row level security;
+alter table app.external_links disable row level security;
+alter table app.automation_rules disable row level security;
+alter table app.automation_runs disable row level security;
 
--- Profiles and preferences: own rows only.
+-- Drop all existing RLS policies
 drop policy if exists profiles_select_own on app.profiles;
-create policy profiles_select_own on app.profiles
-for select using (user_id = auth.uid());
-
 drop policy if exists profiles_insert_own on app.profiles;
-create policy profiles_insert_own on app.profiles
-for insert with check (user_id = auth.uid());
-
 drop policy if exists profiles_update_own on app.profiles;
-create policy profiles_update_own on app.profiles
-for update using (user_id = auth.uid()) with check (user_id = auth.uid());
-
 drop policy if exists user_preferences_rw_own on app.user_preferences;
-create policy user_preferences_rw_own on app.user_preferences
-for all using (user_id = auth.uid()) with check (user_id = auth.uid());
-
--- Workspaces and membership.
 drop policy if exists workspaces_select_member on app.workspaces;
-create policy workspaces_select_member on app.workspaces
-for select using (app.is_workspace_member(id));
-
 drop policy if exists workspaces_insert_owner on app.workspaces;
-create policy workspaces_insert_owner on app.workspaces
-for insert with check (owner_user_id = auth.uid());
-
 drop policy if exists workspaces_update_admin on app.workspaces;
-create policy workspaces_update_admin on app.workspaces
-for update using (app.is_workspace_admin(id)) with check (app.is_workspace_admin(id));
-
 drop policy if exists workspaces_delete_owner on app.workspaces;
-create policy workspaces_delete_owner on app.workspaces
-for delete using (owner_user_id = auth.uid());
-
 drop policy if exists workspace_members_select_member on app.workspace_members;
-create policy workspace_members_select_member on app.workspace_members
-for select using (app.is_workspace_member(workspace_id));
-
 drop policy if exists workspace_members_insert_admin on app.workspace_members;
-create policy workspace_members_insert_admin on app.workspace_members
-for insert with check (app.is_workspace_admin(workspace_id));
-
 drop policy if exists workspace_members_update_admin on app.workspace_members;
-create policy workspace_members_update_admin on app.workspace_members
-for update using (app.is_workspace_admin(workspace_id)) with check (app.is_workspace_admin(workspace_id));
-
 drop policy if exists workspace_members_delete_admin on app.workspace_members;
-create policy workspace_members_delete_admin on app.workspace_members
-for delete using (app.is_workspace_admin(workspace_id));
-
--- Generic workspace-scoped table policies.
 drop policy if exists projects_rw_member on app.projects;
-create policy projects_rw_member on app.projects
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists tasks_rw_member on app.tasks;
-create policy tasks_rw_member on app.tasks
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists task_dependencies_rw_member on app.task_dependencies;
-create policy task_dependencies_rw_member on app.task_dependencies
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists labels_rw_member on app.labels;
-create policy labels_rw_member on app.labels
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists task_labels_rw_member on app.task_labels;
-create policy task_labels_rw_member on app.task_labels
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists plans_rw_member on app.plans;
-create policy plans_rw_member on app.plans
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists plan_tasks_rw_member on app.plan_tasks;
-create policy plan_tasks_rw_member on app.plan_tasks
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists schedule_days_rw_member on app.schedule_days;
-create policy schedule_days_rw_member on app.schedule_days
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists schedule_entries_rw_member on app.schedule_entries;
-create policy schedule_entries_rw_member on app.schedule_entries
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists reminders_rw_member on app.reminders;
-create policy reminders_rw_member on app.reminders
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists reminder_channels_select_member on app.reminder_channels;
-create policy reminder_channels_select_member on app.reminder_channels
-for select using (
-  exists (
-    select 1
-    from app.reminders r
-    where r.id = reminder_channels.reminder_id
-      and app.is_workspace_member(r.workspace_id)
-  )
-);
-
 drop policy if exists reminder_channels_mutate_member on app.reminder_channels;
-create policy reminder_channels_mutate_member on app.reminder_channels
-for all using (
-  exists (
-    select 1
-    from app.reminders r
-    where r.id = reminder_channels.reminder_id
-      and app.is_workspace_member(r.workspace_id)
-  )
-)
-with check (
-  exists (
-    select 1
-    from app.reminders r
-    where r.id = reminder_channels.reminder_id
-      and app.is_workspace_member(r.workspace_id)
-  )
-);
-
 drop policy if exists reminder_push_tokens_select_member on app.reminder_push_tokens;
-create policy reminder_push_tokens_select_member on app.reminder_push_tokens
-for select using (
-  exists (
-    select 1
-    from app.reminders r
-    where r.id = reminder_push_tokens.reminder_id
-      and app.is_workspace_member(r.workspace_id)
-  )
-);
-
 drop policy if exists reminder_push_tokens_mutate_member on app.reminder_push_tokens;
-create policy reminder_push_tokens_mutate_member on app.reminder_push_tokens
-for all using (
-  exists (
-    select 1
-    from app.reminders r
-    where r.id = reminder_push_tokens.reminder_id
-      and app.is_workspace_member(r.workspace_id)
-  )
-)
-with check (
-  exists (
-    select 1
-    from app.reminders r
-    where r.id = reminder_push_tokens.reminder_id
-      and app.is_workspace_member(r.workspace_id)
-  )
-);
-
 drop policy if exists reminder_attempts_rw_member on app.reminder_attempts;
-create policy reminder_attempts_rw_member on app.reminder_attempts
-for all using (
-  exists (
-    select 1
-    from app.reminders r
-    where r.id = reminder_attempts.reminder_id
-      and app.is_workspace_member(r.workspace_id)
-  )
-)
-with check (
-  exists (
-    select 1
-    from app.reminders r
-    where r.id = reminder_attempts.reminder_id
-      and app.is_workspace_member(r.workspace_id)
-  )
-);
-
 drop policy if exists notification_devices_rw_own on app.notification_devices;
-create policy notification_devices_rw_own on app.notification_devices
-for all using (user_id = auth.uid()) with check (user_id = auth.uid());
-
 drop policy if exists agent_runs_rw_member on app.agent_runs;
-create policy agent_runs_rw_member on app.agent_runs
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists chat_threads_rw_member on app.chat_threads;
-create policy chat_threads_rw_member on app.chat_threads
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists chat_messages_rw_member on app.chat_messages;
-create policy chat_messages_rw_member on app.chat_messages
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists knowledge_entries_rw_member on app.knowledge_entries;
-create policy knowledge_entries_rw_member on app.knowledge_entries
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists integration_connections_rw_member on app.integration_connections;
-create policy integration_connections_rw_member on app.integration_connections
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists integration_sync_runs_rw_member on app.integration_sync_runs;
-create policy integration_sync_runs_rw_member on app.integration_sync_runs
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists external_links_rw_member on app.external_links;
-create policy external_links_rw_member on app.external_links
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists automation_rules_rw_member on app.automation_rules;
-create policy automation_rules_rw_member on app.automation_rules
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
-
 drop policy if exists automation_runs_rw_member on app.automation_runs;
-create policy automation_runs_rw_member on app.automation_runs
-for all using (app.is_workspace_member(workspace_id)) with check (app.is_workspace_member(workspace_id));
 
 -- --------------------------------------------------------------------------
 -- User provisioning trigger (profile + personal workspace bootstrap)
@@ -1246,5 +1076,72 @@ drop trigger if exists on_auth_user_created_app on auth.users;
 create trigger on_auth_user_created_app
   after insert on auth.users
   for each row execute procedure app.handle_new_auth_user();
+
+-- Backfill profile/workspace scaffolding for existing users.
+do $$
+declare
+  v_user record;
+  v_workspace_id uuid;
+  v_display_name text;
+begin
+  insert into app.profiles (user_id, display_name, email)
+  select
+    u.id,
+    coalesce(u.raw_user_meta_data ->> 'full_name', split_part(u.email, '@', 1)),
+    u.email
+  from auth.users u
+  on conflict (user_id) do nothing;
+
+  for v_user in
+    select u.id, u.email, u.raw_user_meta_data
+    from auth.users u
+    where not exists (
+      select 1
+      from app.workspace_members wm
+      where wm.user_id = u.id
+        and wm.is_active = true
+    )
+  loop
+    v_display_name := coalesce(v_user.raw_user_meta_data ->> 'full_name', split_part(v_user.email, '@', 1));
+
+    insert into app.workspaces (owner_user_id, name, is_personal, timezone)
+    values (
+      v_user.id,
+      coalesce(v_display_name, 'My Workspace'),
+      true,
+      coalesce(v_user.raw_user_meta_data ->> 'timezone', 'UTC')
+    )
+    returning id into v_workspace_id;
+
+    insert into app.workspace_members (workspace_id, user_id, role, is_active)
+    values (v_workspace_id, v_user.id, 'owner', true)
+    on conflict (workspace_id, user_id) do nothing;
+
+    update app.profiles
+    set default_workspace_id = coalesce(default_workspace_id, v_workspace_id)
+    where user_id = v_user.id;
+  end loop;
+
+  insert into app.user_preferences (user_id)
+  select p.user_id
+  from app.profiles p
+  on conflict (user_id) do nothing;
+end;
+$$;
+
+-- Grant minimum privileges needed for RLS-governed access via authenticated role.
+grant usage on schema app to authenticated;
+grant select, insert, update, delete on all tables in schema app to authenticated;
+grant usage, select on all sequences in schema app to authenticated;
+grant execute on all functions in schema app to authenticated;
+
+alter default privileges in schema app
+  grant select, insert, update, delete on tables to authenticated;
+
+alter default privileges in schema app
+  grant usage, select on sequences to authenticated;
+
+alter default privileges in schema app
+  grant execute on functions to authenticated;
 
 commit;

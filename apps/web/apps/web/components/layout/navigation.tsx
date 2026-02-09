@@ -13,6 +13,7 @@ const Navigation = () => {
 
   const navItems = [
     { name: "Dashboard", href: "/" },
+    { name: "Reminders", href: "/reminders" },
     { name: "Chat", href: "/chat" },
     { name: "Tasks", href: "/tasks" },
     { name: "Pressure", href: "/pressure" },

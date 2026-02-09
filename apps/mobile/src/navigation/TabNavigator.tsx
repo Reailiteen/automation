@@ -5,8 +5,9 @@ import TasksScreen from '../screens/TasksScreen';
 import ChatScreen from '../screens/ChatScreen';
 import PlansScreen from '../screens/PlansScreen';
 import ScheduleScreen from '../screens/ScheduleScreen';
+import RemindersScreen from '../screens/RemindersScreen';
 
-type TabName = 'dashboard' | 'tasks' | 'chat' | 'plans' | 'schedule';
+type TabName = 'dashboard' | 'tasks' | 'chat' | 'plans' | 'schedule' | 'reminders';
 
 export default function TabNavigator() {
   const [activeTab, setActiveTab] = useState<TabName>('dashboard');
@@ -20,6 +21,7 @@ export default function TabNavigator() {
         Chat: 'chat',
         Plans: 'plans',
         Schedule: 'schedule',
+        Reminders: 'reminders',
         Pressure: 'dashboard', // No pressure screen yet
       };
       const targetTab = tabMap[screen];
@@ -41,6 +43,8 @@ export default function TabNavigator() {
         return <PlansScreen />;
       case 'schedule':
         return <ScheduleScreen />;
+      case 'reminders':
+        return <RemindersScreen />;
       default:
         return <DashboardScreen navigation={navigation} />;
     }
@@ -76,6 +80,7 @@ export default function TabNavigator() {
         <TabButton name="dashboard" label="Home" icon="🏠" />
         <TabButton name="tasks" label="Tasks" icon="✓" />
         <TabButton name="schedule" label="Schedule" icon="📅" />
+        <TabButton name="reminders" label="Reminders" icon="🔔" />
         <TabButton name="chat" label="Chat" icon="💬" />
         <TabButton name="plans" label="Plans" icon="📋" />
       </View>

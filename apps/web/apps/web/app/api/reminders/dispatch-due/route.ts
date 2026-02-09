@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient as createClient } from '@automation/auth';
-import { reminderRepo } from '@automation/data';
+import { inAppReminderRepo, reminderRepo } from '@automation/data';
 import { emailService, notificationGuard } from '@automation/services';
 import { Reminder, ReminderChannel, ReminderStatus } from '@automation/types';
 
@@ -80,7 +80,10 @@ async function sendPushToTokens(params: {
     failureCount += 1;
     const errorCode = typeof result?.error === 'string' ? result.error : '';
     if (INVALID_FCM_TOKEN_ERRORS.has(errorCode)) {
-      invalidTokens.push(params.tokens[index]);
+      const token = params.tokens[index];
+      if (token) {
+        invalidTokens.push(token);
+      }
     }
   });
 
@@ -102,13 +105,32 @@ async function dispatchReminder(reminder: Reminder) {
 
   for (const channel of reminder.channels) {
     if (channel === 'inApp') {
+      const deepLink =
+        typeof reminder.metadata?.url === 'string'
+          ? reminder.metadata.url
+          : '/reminders';
+
+      await inAppReminderRepo.create({
+        userId: reminder.userId,
+        reminderId: reminder.id,
+        title: reminder.title,
+        message: reminder.message,
+        status: 'unread',
+        deepLink,
+        metadata: {
+          channel: 'inApp',
+          dueAt: reminder.dueAt.toISOString(),
+          source: 'reminder-dispatch',
+        },
+      });
+
       sentChannels.add('inApp');
       failedChannels.delete('inApp');
       attempts.push(
         createAttempt(
           'inApp',
           'sent',
-          'In-app reminder queued (reminder center delivery wiring is next phase).'
+          'In-app reminder delivered to reminder center.'
         )
       );
       continue;
@@ -136,7 +158,12 @@ async function dispatchReminder(reminder: Reminder) {
         attempts.push(createAttempt('email', 'sent', `Email sent to ${reminder.recipientEmail}.`));
       } else {
         failedChannels.add('email');
-        attempts.push(createAttempt('email', 'failed', 'Email provider send failed.'));
+        const emailError = (emailResult as { error?: string }).error;
+        const reason =
+          typeof emailError === 'string'
+            ? emailError
+            : 'Email provider send failed.';
+        attempts.push(createAttempt('email', 'failed', reason));
       }
       continue;
     }

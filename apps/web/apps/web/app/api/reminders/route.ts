@@ -113,6 +113,10 @@ export async function POST(request: NextRequest) {
         ? (body.metadata as Record<string, unknown>)
         : {};
 
+    if (typeof body?.deepLink === 'string' && body.deepLink.trim()) {
+      metadata.url = body.deepLink.trim();
+    }
+
     const reminder = await reminderRepo.create({
       userId: user.id,
       title,

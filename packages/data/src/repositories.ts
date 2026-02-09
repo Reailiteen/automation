@@ -973,7 +973,7 @@ export const reminderRepo = {
       }
     }
 
-    const reminders = await reminderStorage.getAll();
+    const reminders = (await reminderStorage.getAll()).map(mapReminderRecord);
     return reminders.filter((reminder) => {
       if (options?.userId && reminder.userId !== options.userId) return false;
       if (options?.status && reminder.status !== options.status) return false;
@@ -998,7 +998,7 @@ export const reminderRepo = {
     }
 
     const reminder = await reminderStorage.byId(id);
-    return reminder || null;
+    return reminder ? mapReminderRecord(reminder) : null;
   },
 
   create: async (
@@ -1057,8 +1057,9 @@ export const reminderRepo = {
       }
     }
 
-    const reminder = await reminderStorage.byId(id);
-    if (!reminder) return null;
+    const reminderRaw = await reminderStorage.byId(id);
+    if (!reminderRaw) return null;
+    const reminder = mapReminderRecord(reminderRaw);
 
     const updatedReminder: Reminder = {
       ...reminder,
@@ -1113,7 +1114,7 @@ export const reminderRepo = {
       }
     }
 
-    const reminders = await reminderStorage.getAll();
+    const reminders = (await reminderStorage.getAll()).map(mapReminderRecord);
     return reminders.filter((reminder) => {
       if (reminder.status !== 'pending') return false;
       if (options?.userId && reminder.userId !== options.userId) return false;
@@ -1151,7 +1152,7 @@ export const inAppReminderRepo = {
       }
     }
 
-    const reminders = await inAppReminderStorage.getAll();
+    const reminders = (await inAppReminderStorage.getAll()).map(mapInAppReminderRecord);
     const filtered = reminders.filter((reminder) => {
       if (options?.userId && reminder.userId !== options.userId) return false;
       if (options?.status && reminder.status !== options.status) return false;
@@ -1178,7 +1179,7 @@ export const inAppReminderRepo = {
     }
 
     const reminder = await inAppReminderStorage.byId(id);
-    return reminder ?? null;
+    return reminder ? mapInAppReminderRecord(reminder) : null;
   },
 
   create: async (
@@ -1237,8 +1238,9 @@ export const inAppReminderRepo = {
       }
     }
 
-    const reminder = await inAppReminderStorage.byId(id);
-    if (!reminder) return null;
+    const reminderRaw = await inAppReminderStorage.byId(id);
+    if (!reminderRaw) return null;
+    const reminder = mapInAppReminderRecord(reminderRaw);
     const updated: InAppReminder = {
       ...reminder,
       ...updates,

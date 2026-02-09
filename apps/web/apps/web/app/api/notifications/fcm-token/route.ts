@@ -3,11 +3,14 @@ import { createServerClient as createClient } from "@automation/auth";
 
 type StoredToken = {
   token: string;
-  platform: "web";
+  platform: "web" | "app";
+  deviceId?: string;
   userAgent?: string;
   createdAt: string;
   updatedAt: string;
 };
+
+const ALLOWED_PLATFORMS: StoredToken["platform"][] = ["web", "app"];
 
 function parseStoredTokens(input: unknown): StoredToken[] {
   if (!Array.isArray(input)) {
@@ -20,7 +23,7 @@ function parseStoredTokens(input: unknown): StoredToken[] {
         !!item &&
         typeof item === "object" &&
         typeof (item as StoredToken).token === "string" &&
-        (item as StoredToken).platform === "web" &&
+        ALLOWED_PLATFORMS.includes((item as StoredToken).platform) &&
         typeof (item as StoredToken).createdAt === "string" &&
         typeof (item as StoredToken).updatedAt === "string"
       );
@@ -32,6 +35,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const token = typeof body?.token === "string" ? body.token.trim() : "";
+    const platform =
+      typeof body?.platform === "string" && ALLOWED_PLATFORMS.includes(body.platform)
+        ? (body.platform as StoredToken["platform"])
+        : "web";
+    const deviceId =
+      typeof body?.deviceId === "string" ? body.deviceId.trim() : undefined;
     const userAgent =
       typeof body?.userAgent === "string" ? body.userAgent.trim() : undefined;
 
@@ -59,7 +68,8 @@ export async function POST(request: NextRequest) {
 
     const nextTokenEntry: StoredToken = {
       token,
-      platform: "web",
+      platform,
+      deviceId,
       userAgent,
       createdAt: existingEntry?.createdAt ?? now,
       updatedAt: now,
@@ -88,6 +98,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       tokenCount: dedupedTokens.length,
+      platformBreakdown: dedupedTokens.reduce<Record<string, number>>((acc, item) => {
+        acc[item.platform] = (acc[item.platform] || 0) + 1;
+        return acc;
+      }, {}),
     });
   } catch (error) {
     return NextResponse.json(

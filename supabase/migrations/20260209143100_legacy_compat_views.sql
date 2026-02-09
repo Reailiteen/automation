@@ -32,6 +32,7 @@ select
   p.updated_at,
   p.archived_at
 from app.projects p;
+alter view public.legacy_projects_v2 set (security_invoker = true);
 
 create or replace view public.legacy_tasks_v2 as
 select
@@ -90,6 +91,7 @@ select
   t.deleted_at
 from app.tasks t
 where t.deleted_at is null;
+alter view public.legacy_tasks_v2 set (security_invoker = true);
 
 create or replace view public.legacy_plans_v2 as
 select
@@ -116,6 +118,7 @@ select
   p.updated_at,
   p.archived_at
 from app.plans p;
+alter view public.legacy_plans_v2 set (security_invoker = true);
 
 create or replace view public.legacy_schedules_v2 as
 select
@@ -166,6 +169,7 @@ group by
   sd.generated_by,
   sd.created_at,
   sd.updated_at;
+alter view public.legacy_schedules_v2 set (security_invoker = true);
 
 create or replace view public.legacy_reminders_v2 as
 select
@@ -247,6 +251,13 @@ select
   r.created_at,
   r.updated_at
 from app.reminders r;
+alter view public.legacy_reminders_v2 set (security_invoker = true);
+
+grant select on public.legacy_projects_v2 to authenticated;
+grant select on public.legacy_tasks_v2 to authenticated;
+grant select on public.legacy_plans_v2 to authenticated;
+grant select on public.legacy_schedules_v2 to authenticated;
+grant select on public.legacy_reminders_v2 to authenticated;
 
 comment on view public.legacy_tasks_v2 is
   'Legacy-compatible task shape sourced from app.tasks and related normalized tables.';
